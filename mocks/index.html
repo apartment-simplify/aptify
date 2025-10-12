@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Mock screens: Dashboard Overview, AI Command Console, Work Orders, Vendor Marketplace, Reporting & Alerts, Settings. Assumptions: Work order creation covers primary AI-assisted workflow; analytics and vendor data are sample placeholders. -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AI-Enhanced Property Management Prototype</title>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --surface: #ffffff;
+      --accent: #3558d4;
+      --muted: #eef1f7;
+      --text: #1f2433;
+      --danger: #d64545;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input, select, textarea {
+      font: inherit;
+    }
+    .app-shell {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #5a7bff);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 700;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" rx="32" fill="%23eef1f7"/><circle cx="32" cy="24" r="14" fill="%23445870"/><path d="M16 54c4-10 28-10 32 0" fill="%23445870"/></svg>') center/cover;
+    }
+    .sidebar-toggle {
+      border: none;
+      background: var(--muted);
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    nav {
+      width: 240px;
+      background: var(--surface);
+      border-right: 1px solid rgba(0,0,0,0.05);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: transform 0.3s ease;
+    }
+    nav[aria-hidden="true"] {
+      transform: translateX(-260px);
+    }
+    nav h2 {
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,0.5);
+      margin: 0 0 8px;
+    }
+    .nav-link {
+      padding: 10px 12px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      text-align: left;
+      transition: background 0.2s ease;
+    }
+    .nav-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .nav-link.active {
+      background: rgba(53,88,212,0.12);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    main {
+      flex: 1;
+      padding: 24px;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .screen {
+      display: none;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .screen.active {
+      display: flex;
+    }
+    .section-card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 12px 24px rgba(15,23,42,0.06);
+    }
+    .section-title {
+      margin: 0 0 16px;
+      font-size: 20px;
+    }
+    .kpi-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+    .kpi-card {
+      background: var(--muted);
+      padding: 16px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .kpi-label {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: rgba(0,0,0,0.55);
+    }
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 600;
+    }
+    .kpi-trend {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
+    .trend-up { color: #1e8e3e; }
+    .trend-down { color: var(--danger); }
+    .chart {
+      width: 100%;
+      height: 180px;
+      background: var(--muted);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .chart svg {
+      width: 100%;
+      height: 100%;
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .filter-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .input {
+      padding: 10px 12px;
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 10px;
+      background: #fff;
+      min-width: 200px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+    th {
+      background: rgba(0,0,0,0.02);
+      cursor: pointer;
+      position: relative;
+    }
+    th .sort-indicator {
+      margin-left: 6px;
+      font-size: 12px;
+      opacity: 0.6;
+    }
+    tr:hover {
+      background: rgba(53,88,212,0.05);
+    }
+    form {
+      display: grid;
+      gap: 16px;
+      max-width: 640px;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-weight: 500;
+    }
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      padding: 10px 12px;
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 10px;
+    }
+    .button-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: rgba(0,0,0,0.06);
+      color: var(--text);
+    }
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+    .btn:disabled {
+      background: rgba(0,0,0,0.08);
+      color: rgba(0,0,0,0.4);
+      cursor: not-allowed;
+    }
+    .btn:focus-visible {
+      outline: 2px solid rgba(53,88,212,0.4);
+      outline-offset: 2px;
+    }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 200;
+    }
+    .modal-backdrop.visible {
+      display: flex;
+    }
+    .modal {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 24px;
+      width: min(100%, 420px);
+      box-shadow: 0 18px 36px rgba(15,23,42,0.18);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: rgba(53,88,212,0.12);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .assistant-log {
+      display: grid;
+      gap: 12px;
+    }
+    .assistant-entry {
+      border-radius: 12px;
+      padding: 16px;
+      background: var(--muted);
+    }
+    .two-column {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+    .timeline {
+      border-left: 2px solid rgba(0,0,0,0.08);
+      padding-left: 16px;
+      display: grid;
+      gap: 12px;
+    }
+    .timeline-item {
+      position: relative;
+      padding-left: 12px;
+    }
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -22px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    @media (max-width: 960px) {
+      nav {
+        position: fixed;
+        inset: 64px 0 auto 0;
+        height: calc(100vh - 64px);
+        z-index: 150;
+        box-shadow: 24px 0 48px rgba(15,23,42,0.12);
+      }
+      nav[aria-hidden="true"] {
+        transform: translateX(-260px);
+      }
+      main {
+        padding: 20px;
+      }
+    }
+    @media (max-width: 600px) {
+      header {
+        padding: 10px 16px;
+      }
+      .kpi-value {
+        font-size: 24px;
+      }
+      .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .input {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header houses global navigation controls and user context; replace logo/avatar with tenant agency branding -->
+  <header>
+    <div class="brand">
+      <button class="sidebar-toggle" type="button" aria-expanded="true" aria-controls="sidebar">☰</button>
+      <div class="logo" aria-label="Aptify">AI</div>
+      <div>
+        <strong>Aptify Copilot Console</strong><br>
+        <small>AI-enhanced property management</small>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span class="badge">Live Pilot</span>
+      <button class="btn btn-secondary" type="button">Support</button>
+      <div class="avatar" role="presentation"></div>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <!-- Sidebar lists primary navigation screens; bind to actual routing when integrating -->
+    <nav id="sidebar" aria-label="Primary" aria-hidden="false">
+      <div>
+        <h2>Navigate</h2>
+        <button class="nav-link active" data-target="dashboard">Dashboard</button>
+        <button class="nav-link" data-target="console">AI Command Console</button>
+        <button class="nav-link" data-target="work-orders">Work Orders</button>
+        <button class="nav-link" data-target="vendors">Vendor Marketplace</button>
+        <button class="nav-link" data-target="reporting">Reporting & Alerts</button>
+        <button class="nav-link" data-target="settings">Settings</button>
+      </div>
+    </nav>
+
+    <!-- Main content switches between core screens; replace placeholders with live data components -->
+    <main>
+      <!-- Dashboard brings executive overview metrics and trends -->
+      <section class="screen active" id="dashboard" aria-labelledby="dashboard-title">
+        <div class="section-card">
+          <h1 class="section-title" id="dashboard-title">Portfolio Health Overview</h1>
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <span class="kpi-label">Open Maintenance Issues</span>
+              <span class="kpi-value">126</span>
+              <span class="kpi-trend trend-down">▼ 6% vs last week</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">AI Resolved Queries</span>
+              <span class="kpi-value">482</span>
+              <span class="kpi-trend trend-up">▲ 18% automation</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">SLA Breach Risk</span>
+              <span class="kpi-value">9%</span>
+              <span class="kpi-trend trend-down">▼ 3% improvement</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Vendor Satisfaction</span>
+              <span class="kpi-value">4.6★</span>
+              <span class="kpi-trend trend-up">▲ 0.4 QoQ</span>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="panel-header">
+            <h2 class="section-title">AI-Triage Volume (Last 7 Days)</h2>
+            <div class="filter-group">
+              <select class="input" aria-label="Location filter">
+                <option>All Regions</option>
+                <option>NSW Metro</option>
+                <option>QLD Coastal</option>
+              </select>
+              <select class="input" aria-label="Issue type filter">
+                <option>All Issue Types</option>
+                <option>Maintenance</option>
+                <option>Lease Renewal</option>
+                <option>Compliance</option>
+              </select>
+            </div>
+          </div>
+          <div class="chart" role="img" aria-label="Bar chart showing AI triage volume over last week">
+            <svg viewBox="0 0 320 120">
+              <rect x="20" y="40" width="30" height="60" rx="4" fill="#98a6ff"></rect>
+              <rect x="70" y="30" width="30" height="70" rx="4" fill="#6e82f5"></rect>
+              <rect x="120" y="20" width="30" height="80" rx="4" fill="#3558d4"></rect>
+              <rect x="170" y="28" width="30" height="72" rx="4" fill="#6e82f5"></rect>
+              <rect x="220" y="18" width="30" height="82" rx="4" fill="#3558d4"></rect>
+              <rect x="270" y="46" width="30" height="54" rx="4" fill="#98a6ff"></rect>
+              <text x="160" y="12" text-anchor="middle" font-size="12" fill="#1f2433">Automation rate 68%</text>
+            </svg>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="panel-header">
+            <h2 class="section-title">Critical Alerts</h2>
+            <button class="btn btn-primary" type="button">Create Alert Policy</button>
+          </div>
+          <div class="timeline">
+            <div class="timeline-item">
+              <strong>45 King St · Urgent Leak Escalated</strong>
+              <p>AI flagged repeat emergency. Vendor accepted ETA <strong>2 hrs</strong>. Awaiting owner approval.</p>
+            </div>
+            <div class="timeline-item">
+              <strong>Building 12 · Lift Maintenance Delay</strong>
+              <p>Copilot recommends alternate vendor due to SLA breach risk. Review before 4pm.</p>
+            </div>
+            <div class="timeline-item">
+              <strong>Compliance · Gas Certificate Expiring</strong>
+              <p>Four properties require documentation before <strong>30 Jun</strong>. Send reminders now.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI Command Console simulates copilot dialogue; wire to backend actions later -->
+      <section class="screen" id="console" aria-labelledby="console-title">
+        <div class="section-card">
+          <h1 class="section-title" id="console-title">AI Copilot Command Console</h1>
+          <div class="assistant-log">
+            <div class="assistant-entry">
+              <strong>Assistant</strong>
+              <p>Summarised outstanding high-priority maintenance for Building 12. 3 jobs pending owner approval; recommended vendor rotation due to workloads.</p>
+            </div>
+            <div class="assistant-entry">
+              <strong>Assistant</strong>
+              <p>Drafted response to tenant James Lee referencing policy clause 4.2. Added citation to NSW Tenancy Guidelines.</p>
+            </div>
+            <div class="assistant-entry">
+              <strong>Assistant</strong>
+              <p>Suggested top vendors for leaking roof at 45 King St under $1,500. Top pick: RoofSure (Avg response 3.4 hrs, 4.7★ rating).</p>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="panel-header">
+            <h2 class="section-title">Compose New Command</h2>
+            <div class="filter-group">
+              <select class="input" aria-label="Quick action template">
+                <option>Quick Actions</option>
+                <option>Log Maintenance Issue</option>
+                <option>Draft Tenant Reply</option>
+                <option>Generate Work Order</option>
+              </select>
+              <button class="btn btn-secondary" type="button">Attach File</button>
+            </div>
+          </div>
+          <textarea aria-label="Command input" placeholder="Ask the copilot to summarise tasks, draft replies, or surface vendors..."></textarea>
+          <div class="button-row">
+            <button class="btn btn-primary" type="button">Send Command</button>
+            <button class="btn btn-secondary" type="button">Preview Cited Sources</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Work Orders screen shows sortable/filterable table and creation form -->
+      <section class="screen" id="work-orders" aria-labelledby="work-orders-title">
+        <div class="section-card">
+          <div class="panel-header">
+            <h1 class="section-title" id="work-orders-title">Maintenance Work Orders</h1>
+            <div class="filter-group">
+              <input class="input" id="workOrderSearch" type="search" placeholder="Search by property, tenant, or vendor" aria-label="Search work orders">
+              <select class="input" aria-label="Status filter" id="statusFilter">
+                <option value="all">All Statuses</option>
+                <option value="Scheduled">Scheduled</option>
+                <option value="Awaiting Approval">Awaiting Approval</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+          </div>
+          <div class="section-card" style="padding:0;">
+            <table aria-describedby="work-orders-title">
+              <thead>
+                <tr>
+                  <th data-sort="property">Property <span class="sort-indicator">⇅</span></th>
+                  <th data-sort="tenant">Tenant <span class="sort-indicator">⇅</span></th>
+                  <th data-sort="issue">Issue <span class="sort-indicator">⇅</span></th>
+                  <th data-sort="priority">Priority <span class="sort-indicator">⇅</span></th>
+                  <th data-sort="status">Status <span class="sort-indicator">⇅</span></th>
+                  <th data-sort="vendor">Vendor <span class="sort-indicator">⇅</span></th>
+                  <th data-sort="due">Due <span class="sort-indicator">⇅</span></th>
+                </tr>
+              </thead>
+              <tbody id="workOrderBody">
+                <tr>
+                  <td>45 King St</td>
+                  <td>James Lee</td>
+                  <td>Roof leak</td>
+                  <td>Urgent</td>
+                  <td>Awaiting Approval</td>
+                  <td>RoofSure</td>
+                  <td>Today</td>
+                </tr>
+                <tr>
+                  <td>12 Market Ave</td>
+                  <td>Sonia Patel</td>
+                  <td>Lift outage</td>
+                  <td>High</td>
+                  <td>In Progress</td>
+                  <td>Elevate NSW</td>
+                  <td>Tomorrow</td>
+                </tr>
+                <tr>
+                  <td>88 Coast Rd</td>
+                  <td>Liam Chen</td>
+                  <td>Solar inverter fault</td>
+                  <td>Medium</td>
+                  <td>Scheduled</td>
+                  <td>SunGrid</td>
+                  <td>21 Jun</td>
+                </tr>
+                <tr>
+                  <td>23 Greenway</td>
+                  <td>Amelia Ross</td>
+                  <td>Mould treatment</td>
+                  <td>High</td>
+                  <td>Awaiting Approval</td>
+                  <td>FreshAir Co</td>
+                  <td>18 Jun</td>
+                </tr>
+                <tr>
+                  <td>5 Harbour Pl</td>
+                  <td>Lucas Miller</td>
+                  <td>Hot water outage</td>
+                  <td>Urgent</td>
+                  <td>In Progress</td>
+                  <td>HeatWave</td>
+                  <td>Today</td>
+                </tr>
+                <tr>
+                  <td>77 River Rd</td>
+                  <td>Zara Kahn</td>
+                  <td>Fence repair</td>
+                  <td>Low</td>
+                  <td>Scheduled</td>
+                  <td>SafeBuild</td>
+                  <td>30 Jun</td>
+                </tr>
+                <tr>
+                  <td>18 Orchard St</td>
+                  <td>Marcus O'Neill</td>
+                  <td>HVAC service</td>
+                  <td>Medium</td>
+                  <td>Completed</td>
+                  <td>CoolBreeze</td>
+                  <td>12 Jun</td>
+                </tr>
+                <tr>
+                  <td>61 Pine View</td>
+                  <td>Maya Singh</td>
+                  <td>Window seal</td>
+                  <td>Low</td>
+                  <td>Scheduled</td>
+                  <td>ClearGlass</td>
+                  <td>25 Jun</td>
+                </tr>
+                <tr>
+                  <td>39 Summit Rd</td>
+                  <td>Oliver West</td>
+                  <td>Fire panel fault</td>
+                  <td>High</td>
+                  <td>In Progress</td>
+                  <td>SafeLine</td>
+                  <td>16 Jun</td>
+                </tr>
+                <tr>
+                  <td>101 Parkside</td>
+                  <td>Eva Thompson</td>
+                  <td>Carpet flood</td>
+                  <td>Urgent</td>
+                  <td>Awaiting Approval</td>
+                  <td>DrySmart</td>
+                  <td>Today</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title">Create New Work Order</h2>
+          <form id="workOrderForm" novalidate>
+            <label>
+              Property Address *
+              <input class="input" type="text" name="property" required placeholder="e.g. 45 King St, Sydney">
+            </label>
+            <label>
+              Tenant Email *
+              <input class="input" type="email" name="email" required placeholder="tenant@example.com">
+            </label>
+            <label>
+              Issue Summary *
+              <textarea name="summary" required placeholder="Describe the problem reported..."></textarea>
+            </label>
+            <label>
+              Priority *
+              <select class="input" name="priority" required>
+                <option value="">Select priority</option>
+                <option>Urgent</option>
+                <option>High</option>
+                <option>Medium</option>
+                <option>Low</option>
+              </select>
+            </label>
+            <label>
+              Target Vendor Suggestion
+              <input class="input" type="text" name="vendor" placeholder="e.g. RoofSure">
+            </label>
+            <label>
+              Desired Completion Date *
+              <input class="input" type="date" name="due" required>
+            </label>
+            <div class="button-row">
+              <button class="btn btn-primary" type="submit" id="submitWorkOrder">Submit for Approval</button>
+              <button class="btn btn-secondary" type="reset">Clear</button>
+            </div>
+            <p id="formFeedback" role="alert" style="color:var(--danger);font-weight:600;"></p>
+          </form>
+        </div>
+      </section>
+
+      <!-- Vendor Marketplace provides snapshot of recommended suppliers -->
+      <section class="screen" id="vendors" aria-labelledby="vendors-title">
+        <div class="section-card">
+          <h1 class="section-title" id="vendors-title">Vendor Recommendations</h1>
+          <div class="two-column">
+            <div>
+              <h3>Leaking Roof · Budget ≤ $1,500</h3>
+              <ul>
+                <li><strong>RoofSure</strong> — Avg rating 4.7★ · Response 3.4 hrs</li>
+                <li><strong>SkyGuard Roofing</strong> — Rating 4.5★ · Response 5.1 hrs</li>
+                <li><strong>Harbour Heights</strong> — Rating 4.3★ · Regional specialist</li>
+              </ul>
+              <button class="btn btn-primary" type="button">Assign RoofSure</button>
+              <button class="btn btn-secondary" type="button">Compare Vendors</button>
+            </div>
+            <div>
+              <h3>Compliance Documents</h3>
+              <p>AI flagged missing insurance certificates for 2 vendors. Schedule reminders or request uploads.</p>
+              <button class="btn btn-secondary" type="button">Request Insurance Update</button>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="panel-header">
+            <h2 class="section-title">Vendor Capacity Snapshot</h2>
+            <select class="input" aria-label="Service category filter">
+              <option>All Services</option>
+              <option>Plumbing</option>
+              <option>Electrical</option>
+              <option>HVAC</option>
+            </select>
+          </div>
+          <div class="chart" role="img" aria-label="Stacked chart showing vendor workload">
+            <svg viewBox="0 0 320 120">
+              <rect x="30" y="20" width="40" height="80" fill="#3558d4" rx="6"></rect>
+              <rect x="90" y="40" width="40" height="60" fill="#6e82f5" rx="6"></rect>
+              <rect x="150" y="10" width="40" height="90" fill="#98a6ff" rx="6"></rect>
+              <rect x="210" y="30" width="40" height="70" fill="#6e82f5" rx="6"></rect>
+              <rect x="270" y="45" width="40" height="55" fill="#3558d4" rx="6"></rect>
+              <text x="160" y="110" text-anchor="middle" font-size="12" fill="#1f2433">Capacity (jobs/week)</text>
+            </svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- Reporting brings SLA tracking and alerts configuration -->
+      <section class="screen" id="reporting" aria-labelledby="reporting-title">
+        <div class="section-card">
+          <h1 class="section-title" id="reporting-title">SLA & Compliance Reporting</h1>
+          <div class="two-column">
+            <div>
+              <h3>Properties at Risk</h3>
+              <ul>
+                <li><strong>Building 12</strong> — 4 issues >7 days; AI recommends escalation to regional manager.</li>
+                <li><strong>101 Parkside</strong> — Awaiting owner approvals; send digest before 3pm.</li>
+                <li><strong>5 Harbour Pl</strong> — High tenant sentiment drop this week.</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Weekly Summary Settings</h3>
+              <p>Send automated insight digest every Monday at 8:00 AM AEST.</p>
+              <button class="btn btn-secondary" type="button">Edit Schedule</button>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title">Alert Policies</h2>
+          <div class="assistant-entry">
+            <strong>Unresolved issues &gt; 7 days</strong>
+            <p>Triggered 6 times this week. Routed to: Senior Property Manager + Copilot summary.</p>
+          </div>
+          <div class="assistant-entry">
+            <strong>Vendor capacity spike</strong>
+            <p>HVAC workload exceeded 80% on Wed. Suggested additional vendor outreach.</p>
+          </div>
+          <button class="btn btn-primary" type="button">Add Alert Rule</button>
+        </div>
+      </section>
+
+      <!-- Settings gives control toggles; extend with full configuration pages later -->
+      <section class="screen" id="settings" aria-labelledby="settings-title">
+        <div class="section-card">
+          <h1 class="section-title" id="settings-title">Platform Configuration</h1>
+          <div class="two-column">
+            <div>
+              <h3>AI Guardrails</h3>
+              <ul>
+                <li>Require human approval before issuing vendor work orders.</li>
+                <li>Auto-refuse queries lacking authoritative sources.</li>
+                <li>Maintain citation logs for 12 months (Privacy Act compliance).</li>
+              </ul>
+            </div>
+            <div>
+              <h3>Integrations</h3>
+              <p>CSV import enabled for tenants, properties, vendors. API integrations planned Phase 3.</p>
+              <button class="btn btn-secondary" type="button">Manage Imports</button>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title">Notifications</h2>
+          <label>
+            <input type="checkbox" checked>
+            Send daily AI performance digest (Accuracy, Automation rate, Refusals).
+          </label>
+          <label>
+            <input type="checkbox" checked>
+            Escalate urgent tenant issues via SMS backup.
+          </label>
+          <label>
+            <input type="checkbox">
+            Enable cost alerts when model spending exceeds set threshold.
+          </label>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal handles confirmation before dispatch; replace text/actions with real approval flow -->
+  <div class="modal-backdrop" id="confirmationModal" role="presentation">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc">
+      <h2 id="modal-title">Submit Work Order?</h2>
+      <p id="modal-desc">Send this work order to the assigned approver and notify the recommended vendor.</p>
+      <div class="button-row">
+        <button class="btn btn-primary" type="button" id="confirmSubmit">Confirm & Send</button>
+        <button class="btn btn-secondary" type="button" id="cancelModal">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.querySelector('.sidebar-toggle');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const screens = document.querySelectorAll('.screen');
+    const workOrderSearch = document.getElementById('workOrderSearch');
+    const statusFilter = document.getElementById('statusFilter');
+    const tableBody = document.getElementById('workOrderBody');
+    const form = document.getElementById('workOrderForm');
+    const feedback = document.getElementById('formFeedback');
+    const modal = document.getElementById('confirmationModal');
+    const confirmSubmit = document.getElementById('confirmSubmit');
+    const cancelModal = document.getElementById('cancelModal');
+    let activeSort = { key: null, direction: 1 };
+    const tableData = Array.from(tableBody.querySelectorAll('tr')).map(row => {
+      const cells = row.querySelectorAll('td');
+      return {
+        element: row,
+        property: cells[0].textContent,
+        tenant: cells[1].textContent,
+        issue: cells[2].textContent,
+        priority: cells[3].textContent,
+        status: cells[4].textContent,
+        vendor: cells[5].textContent,
+        due: cells[6].textContent
+      };
+    });
+
+    toggleBtn.addEventListener('click', () => {
+      const hidden = sidebar.getAttribute('aria-hidden') === 'true';
+      sidebar.setAttribute('aria-hidden', hidden ? 'false' : 'true');
+      toggleBtn.setAttribute('aria-expanded', hidden ? 'true' : 'false');
+    });
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.forEach(l => l.classList.remove('active'));
+        screens.forEach(screen => screen.classList.remove('active'));
+        link.classList.add('active');
+        const screen = document.getElementById(link.dataset.target);
+        if (screen) screen.classList.add('active');
+        if (window.innerWidth < 960) {
+          sidebar.setAttribute('aria-hidden', 'true');
+          toggleBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    });
+
+    const renderTable = data => {
+      tableBody.innerHTML = '';
+      data.forEach(item => tableBody.appendChild(item.element));
+    };
+
+    const filterTable = () => {
+      const query = workOrderSearch.value.toLowerCase();
+      const status = statusFilter.value;
+      const filtered = tableData.filter(item => {
+        const matchesQuery = [item.property, item.tenant, item.vendor, item.issue].some(field => field.toLowerCase().includes(query));
+        const matchesStatus = status === 'all' || item.status === status;
+        return matchesQuery && matchesStatus;
+      });
+      renderTable(filtered);
+    };
+
+    workOrderSearch.addEventListener('input', filterTable);
+    statusFilter.addEventListener('change', filterTable);
+
+    document.querySelectorAll('th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const key = th.dataset.sort;
+        activeSort.direction = activeSort.key === key ? -activeSort.direction : 1;
+        activeSort.key = key;
+        const sorted = [...tableData].sort((a, b) => {
+          const aVal = a[key].toLowerCase();
+          const bVal = b[key].toLowerCase();
+          if (aVal < bVal) return -1 * activeSort.direction;
+          if (aVal > bVal) return 1 * activeSort.direction;
+          return 0;
+        });
+        renderTable(sorted.filter(row => row.element.isConnected));
+        filterTable();
+      });
+    });
+
+    const openModal = () => {
+      modal.classList.add('visible');
+      modal.querySelector('.modal').focus();
+      document.body.style.overflow = 'hidden';
+    };
+
+    const closeModal = () => {
+      modal.classList.remove('visible');
+      document.body.style.overflow = '';
+      confirmSubmit.focus();
+    };
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      feedback.textContent = '';
+      if (!form.checkValidity()) {
+        feedback.textContent = 'Please complete required fields and provide a valid email.';
+        form.reportValidity();
+        return;
+      }
+      openModal();
+    });
+
+    confirmSubmit.addEventListener('click', () => {
+      modal.classList.remove('visible');
+      document.body.style.overflow = '';
+      feedback.style.color = '#1e8e3e';
+      feedback.textContent = 'Work order submitted to approver. AI will monitor SLA status.';
+      form.reset();
+      setTimeout(() => {
+        feedback.style.color = 'var(--danger)';
+      }, 4000);
+    });
+
+    cancelModal.addEventListener('click', closeModal);
+    modal.addEventListener('click', event => {
+      if (event.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && modal.classList.contains('visible')) {
+        closeModal();
+      }
+    });
+  </script>
+</body>
+</html>
