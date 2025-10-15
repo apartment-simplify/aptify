@@ -10,13 +10,13 @@
 ### 1.2 Strategic Goals
 - **Operational efficiency**: Cut time-to-resolution for maintenance and tenant enquiries by at least 40%.
 - **Data quality**: Achieve ≥90% accuracy for extracted tenant, property, and issue metadata from free text.
-- **Compliance and trust**: Ensure every factual AI response cites authoritative internal sources; maintain auditable trails for all AI-assisted actions.
+- **Compliance and trust**: Ensure every factual AI response cites authoritative internal sources; maintain traceable trails for all AI-assisted actions.
 - **Commercial viability**: Launch subscription-based service targeting independent agencies managing 500–5,000 properties with clear ROI.
 
 ### 1.3 Business Context
 - Australian property management retains legacy, manual processes and fragmented vendor relationships.
 - Competitive advantage comes from locally hosted data, independence from third-party platforms, and rapid onboarding via CSV/PDF exports before integrations.
-- Investors value recurring revenue, low churn, and expansion potential through analytics upsells and marketplace services.
+- Investors value recurring revenue, low churn, and expansion potential through marketplace services and future add-ons.
 
 ### 1.4 Differentiators
 - AI copilot tuned for property management jargon, Australian regulations, and tenancy workflows.
@@ -35,8 +35,8 @@
 - Requires streamlined data entry from calls/emails and automation for repetitive communications.
 
 ### 2.3 Regional Portfolio Manager
-- Manages multiple offices; focuses on performance reporting and risk management.
-- Needs analytics, compliance dashboards, and escalation alerts.
+- Manages multiple offices; focuses on regulatory compliance and risk management.
+- Needs timely visibility into SLA breaches, compliance requirements, and escalation alerts.
 
 ### 2.4 Service Vendor Coordinator
 - Maintains local vendor roster and negotiates rates.
@@ -58,7 +58,6 @@
 - Request: “Log payment arrangement for tenant James Lee” and capture structured data without manual form filling.
 
 ### 3.3 Regional Portfolio Manager
-- Weekly report: “Show properties at risk of SLA breaches this month” → Copilot generates summary with supporting data.
 - Configure alerts for unresolved issues >7 days and route to responsible manager.
 
 ### 3.4 Service Vendor Coordinator
@@ -68,59 +67,96 @@
 ### 3.5 Tenant Support Agent
 - Prompt: “Draft response to tenant about dog approval referencing City of Sydney guidelines” → AI cites stored policy documents.
 - Ask clarifying questions and receive refusal when information is insufficient, preserving compliance.
-- Tenant calls dedicated support number; AI voice agent authenticates caller, collects structured issue details, logs ticket, and routes urgent cases for human follow-up while displaying transcript in console.
+- Tenant calls dedicated support number; AI voice agent authenticates caller, collects structured issue details, logs ticket, and routes urgent cases for human follow-up while displaying transcript in the agent workspace.
 
 ## 4. Core Features and Functional Requirements
 
-### 4.1 AI Command Console
-- Chat-style interface accepting voice, text, and file attachments.
-- Quick actions for common tasks (log issue, draft work order, draft tenant reply).
-- Session history with filters by property, tenant, or issue.
-
-### 4.2 Structured Information Extraction
+### 4.1 Structured Information Extraction
 - Automatic detection of tenant name, property address, issue category, severity, SLA target, sentiment, and attachments.
 - Confidence scoring with inline highlighting; low-confidence fields flagged for human confirmation.
 - Editable structured output before commit; AI never writes directly to production database without approval.
 
-### 4.3 Work Order Drafting
+### 4.2 Work Order Drafting
 - Generate scope including problem description, recommended steps, required materials, estimated cost, and SLA.
 - Suggest 1–3 vendors ranked by fit; include vendor contact info and justification.
 - Export to PDF/CSV; enable download and secure share link.
 
-### 4.4 Tenant Communication Assistance
+### 4.3 Tenant Communication Assistance
 - Draft responses using RAG to pull policy excerpts and historical notices; cite all sources.
 - Provide tone controls (formal, empathetic, urgent) with preview.
 - Refuse to answer or escalate when source confidence is below threshold or conflicting.
 
-### 4.5 Vendor Management
+### 4.4 Vendor Management
 - Maintain local vendor registry with specialties, coverage zone, rates, licensing, insurance expiry.
 - Historical performance tracking (completion rate, average response time, tenant feedback).
 - Search, filter, and bulk import/export capability.
 
-### 4.6 Knowledge Management and RAG Corpus
+### 4.5 Knowledge Management and RAG Corpus
 - Content ingestion from PDFs, DOCX, emails, and web archives of community policies.
 - Metadata tagging by property, date, policy type, or notice.
-- Version control with rollback; audit log when documents become obsolete.
+- Version control with rollback; change log when documents become obsolete.
 
-### 4.7 Reporting and Analytics
-- Dashboards covering open issues by category, SLA adherence, vendor utilisation, tenant satisfaction proxies.
-- Exportable weekly/monthly summaries; email scheduling.
-
-### 4.8 Auditability and Governance
-- Log every AI suggestion, user edits, approval outcome, and exported artifact.
-- Provide traceable link between final action and source suggestion for insurance or tribunal evidence.
-- Role-based access control aligned with least privilege.
-
-### 4.9 AI Tenant Intake Agent
+### 4.6 AI Tenant Intake Agent
 - Dedicated phone line and monitored inbox fronted by AI; callers and email senders interact with natural-language agent that mirrors agency scripts.
 - Real-time transcription and summarisation feed structured extraction to auto-populate issue tickets and recommended tasks.
 - Identity verification via property-specific challenge questions or SMS OTP before sensitive updates.
-- Escalation pathways for emergencies or low-confidence captures, with full transcript and audio snippet surfaced in the console.
+- Escalation pathways for emergencies or low-confidence captures, with full transcript and audio snippet surfaced in the agent workspace.
+
+### 4.7 Source Pool Directory
+- **Feature Overview**: Maintain a Source Pool covering all external workers—plumbers, electricians, HVAC technicians, cleaners—supporting agency teams, with profiles visible alongside active workflows.
+- **Core Functionality**: Store worker metadata (trade, certifications, coverage zones, contact channels, service history) and associate each record with work orders, jobs, and past communications.
+- **Goals / Benefits**: Streamline agent outreach to trusted providers, reduce time spent finding qualified workers, and ensure consistent service quality.
+- **User Flow**: Agent filters Source Pool by trade/location/performance → selects worker → links record to job ticket → communication history updates automatically.
+- **Technical Notes**: Persist Source Pool data within vendor registry tables; sync updates from onboarding forms or CSV imports; expose APIs for downstream scheduling tools.
+- **Metrics for Success**: ≥95% completeness of worker profiles; ≥30% reduction in time-to-assign vendor; <2% of outbound messages fail due to outdated contact info.
+
+### 4.8 Intelligent Message Intake Orchestration
+- **Feature Overview**: Aggregate all inbound communications sent to property management agents across email, SMS, and messaging integrations into a unified queue tied to the Source Pool.
+- **Core Functionality**: Ingest and normalise multi-channel messages, auto-categorise content by topic (maintenance, scheduling, payment, compliance), and trigger AI Copilot drafts for agent approval.
+- **Goals / Benefits**: Streamline collaboration with service providers, reduce manual triage effort, and maintain consistent tone and accuracy in agent responses.
+- **User Flow**: Incoming message received → categorised → matched to relevant topic or job → AI Copilot suggests reply → agent reviews edits if needed → response sent and logged.
+- **Technical Notes**: Integrate with email/SMS APIs; apply NLP pipelines for topic detection, summarisation, and entity extraction; retain correspondence and classifications linked to Source Pool contacts.
+- **Metrics for Success**: ≥90% of messages categorised correctly without intervention; ≥45 minutes saved per agent per day; ≥4.5/5 average agent satisfaction with AI-generated drafts.
+
+### 4.9 Documents Control (Invoices & Records)
+- **Feature Overview**: Centralise management of invoices, receipts, quotes, and contracts linked to properties, jobs, and compliance obligations.
+- **Core Functionality**: Support upload from desktop/mobile, smart tagging by property/job/vendor, approval routing, version tracking, and granular access controls for agents, owners, and tenants.
+- **User Flow**: Agent uploads document → applies tags or accepts AI-suggested metadata → selects approval path → reviewers approve/annotate → final version attaches to property/job record and becomes searchable.
+- **Technical Notes**: Store objects in encrypted document repository (S3-compatible) with metadata in relational DB; leverage OCR for text extraction; enforce RBAC policies and audit logs; integrate with e-signature providers when needed.
+- **Metrics for Success**: ≥95% of documents tagged accurately; average document approval turnaround reduced by 40%; zero unauthorised document access incidents.
+
+### 4.10 Inspection Manager
+- **Feature Overview**: Maintain a live schedule of inspections with assigned agents or contractors, ensuring timely execution and reporting.
+- **Core Functionality**: Create inspection events, assign personnel, attach checklists/templates, trigger reminders, and capture outcomes via mobile or desktop.
+- **User Flow**: Property flagged for inspection → agent schedules date/time → assignee receives calendar invite and reminder → inspection completed using template → report and photos uploaded → stakeholders notified.
+- **Technical Notes**: Sync with calendar APIs (Google/Microsoft); provide offline-capable mobile interface; store inspection templates and outcomes in structured schema; integrate push/SMS reminders.
+- **Metrics for Success**: ≥90% of inspections completed on schedule; inspection report submission time reduced by 50%; ≥4.5/5 satisfaction from agents using mobile workflow.
+
+### 4.11 Rent & Cashflow
+- **Feature Overview**: Automate rent communications, track inflows/outflows, and surface cashflow insights for properties and owners.
+- **Core Functionality**: Send rent reminders and receipts, monitor overdue balances, publish dashboards showing monthly cashflow, and support CSV exports for accounting.
+- **User Flow**: Rent schedule ingested → system issues reminders ahead of due dates → payments reconciled → overdue accounts flagged → receipts auto-generated → owners view cashflow dashboard and export data.
+- **Technical Notes**: Integrate with payment gateways/banking feeds where available; maintain ledger tables for rent/expense transactions; generate PDFs via templating service; expose webhooks for accounting sync.
+- **Metrics for Success**: ≥80% of tenants receive automated reminders; overdue rent reduced by 25%; monthly cashflow dashboards accessed by ≥70% of owners.
+
+### 4.12 Knowledge Base (Law & Policy RAG System)
+- **Feature Overview**: Provide AI-assisted answers grounded in property law, compliance rules, and internal policies via retrieval-augmented generation.
+- **Core Functionality**: Allow natural-language queries, retrieve relevant legal/policy documents, and deliver AI responses with citations and confidence indicators.
+- **User Flow**: User asks compliance question → RAG retrieves supporting passages → AI drafts answer with cited sources → user reviews, bookmarks, or escalates for legal confirmation if needed.
+- **Technical Notes**: Curate legal corpus with metadata (jurisdiction, topic, effective dates); ingest via document pipeline; use vector search plus hybrid keyword filters; enforce human-in-loop for low-confidence responses.
+- **Metrics for Success**: ≥95% citation accuracy; ≥60% of compliance queries resolved without escalation; average time to answer regulatory questions reduced by 50%.
+
+### 4.13 AI Intake Ops (Urgency-Based Reordering)
+- **Feature Overview**: Automatically prioritise incoming maintenance and tenant requests based on urgency to focus agent attention on critical work.
+- **Core Functionality**: Analyse message content for urgency cues, assign priority levels, reorder queues in the operations dashboard, and allow manual overrides.
+- **User Flow**: Message ingested → NLP scores urgency and sentiment → task queued with visual indicator (high/medium/low) → agent reviews, optionally overrides, and actioned item moves forward in workflow.
+- **Technical Notes**: Train classifiers on historical resolution data; incorporate keyword rules and sentiment analysis; expose priority state via real-time API/WebSocket; log overrides for continuous model tuning.
+- **Metrics for Success**: ≥85% accuracy in urgency classification; high-priority tasks addressed within SLA 95% of the time; manual overrides decrease by 30% as model matures.
 
 ## 5. End-to-End Workflows
 
 ### 5.1 Issue Intake and Classification
-1. User pastes tenant email into console.
+1. User pastes tenant email into the agent workspace.
 2. Copilot parses entities, proposes structured fields and recommended issue class.
 3. User reviews, edits if necessary, and approves.
 4. System logs issue, sets SLA, triggers notification to assigned manager.
@@ -140,13 +176,13 @@
 ### 5.4 Vendor Registry Maintenance
 1. Coordinator uploads CSV of vendor updates.
 2. System validates required fields, flags missing compliance items.
-3. Approved records update local registry; change history stored for auditing.
+3. Approved records update local registry; change history stored for future reference.
 
 ### 5.5 AI Tenant Voice/Email Intake
 1. Tenant calls dedicated number or sends email to agency intake address.
 2. AI agent greets tenant, authenticates identity, and gathers issue description, urgency, preferred contact method, and access constraints.
 3. Conversation is transcribed; structured fields auto-populate new issue ticket with recommended task routing.
-4. System notifies assigned manager, displays transcript/audio snippet in console, and flags follow-up actions needing human confirmation.
+4. System notifies assigned manager, displays transcript/audio snippet in the agent workspace, and flags follow-up actions needing human confirmation.
 
 ## 6. Data Model and Sources
 
@@ -234,12 +270,12 @@
 - **Adoption**: ≥60% of active users engage copilot weekly within three months of onboarding.
 - **Efficiency**: Median time from issue intake to work order draft reduced from baseline by 40%.
 - **Quality**: Citation accuracy ≥95%; extraction F1 ≥0.9 on key fields (tenant, property, issue type, priority).
-- **Reliability**: Copilot refusal rate when unsure <5%; false confident answers <1% in audits.
+- **Reliability**: Copilot refusal rate when unsure <5%; false confident answers <1% in quality reviews.
 - **Vendor Utilisation**: AI-recommended vendors accepted without changes ≥70%.
 - **User Satisfaction**: CSAT ≥4.5/5 for AI-assisted tasks; NPS increase of +10 points after six months.
 - **Tenant Intake Automation**: ≥60% of business-hours inbound tenant calls/emails are handled end-to-end by AI agent without manual intake.
 - **Financial**: Gross margin ≥70% by end of Year 1; churn <5% per quarter.
-- Evaluation cadence: Monthly analytics review, quarterly customer advisory board feedback, and biannual penetration tests.
+- Evaluation cadence: Monthly performance review, quarterly customer advisory board feedback, and biannual penetration tests.
 
 ## 11. Release Plan and Initial Deliverables
 
@@ -249,10 +285,8 @@
 - Deliver CSV/PDF export templates for issues, work orders, and vendor lists.
 
 ### 11.2 Phase 1 – MVP (Month 2–4)
-- Launch AI command console with extraction, RAG-backed tenant replies, and work order drafting.
 - Enable vendor recommendation v1 with rule-based fallback.
 - Provide manual export workflows and batch import for properties/tenants/vendors.
-- Set up analytics dashboards for core metrics.
 
 ### 11.3 Phase 2 – Beta Enhancements (Month 5–7)
 - Add approval workflows, SLA alerts, and scheduled reporting.
@@ -263,7 +297,6 @@
 ### 11.4 Phase 3 – General Availability (Month 8–12)
 - Integrate optional APIs (accounting, maintenance platforms) while preserving independence.
 - Launch marketplace onboarding for certified vendors.
-- Implement advanced analytics and anomaly detection for preventative maintenance.
 
 ## 12. Future Roadmap
 
@@ -275,7 +308,7 @@
 
 ## 13. Risks and Mitigations
 
-- **Low trust in AI outputs**: Provide transparent citations, editable structured fields, and audit trails; run pilot programs with high-touch onboarding.
+- **Low trust in AI outputs**: Provide transparent citations, editable structured fields, and traceable records; run pilot programs with high-touch onboarding.
 - **Data privacy concerns**: Host data within Australia, enforce strict access controls, and communicate compliance posture clearly.
 - **Vendor data staleness**: Implement reminders for document expiry and quarterly data hygiene reviews.
 - **Model drift**: Schedule retraining, monitor accuracy dashboards, and maintain human feedback loop.
