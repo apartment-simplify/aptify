@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Mock screens: Executive Dashboard, AI Command Console, Tenant Hub, Owner HQ, Lease Contracts, Maintenance Ops, Inspection Manager, Documents Control, Analytics & Insights, Rent & Cashflow, Governance, Knowledge Base, AI Intake Ops. Assumptions: Data is sample only; replace arrays/strings with live API data when wiring to backend services. -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AI-Enhanced Property Management Prototype</title>
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --surface: #ffffff;
+      --accent: #3558d4;
+      --muted: #eef1f7;
+      --text: #1f2433;
+      --danger: #d64545;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input, select, textarea {
+      font: inherit;
+    }
+    .app-shell {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--surface);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--accent), #5a7bff);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 700;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" rx="32" fill="%23eef1f7"/><circle cx="32" cy="24" r="14" fill="%23445870"/><path d="M16 54c4-10 28-10 32 0" fill="%23445870"/></svg>') center/cover;
+    }
+    .sidebar-toggle {
+      border: none;
+      background: var(--muted);
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    nav {
+      width: 252px;
+      background: var(--surface);
+      border-right: 1px solid rgba(0,0,0,0.05);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transition: transform 0.3s ease;
+    }
+    nav[aria-hidden="true"] {
+      transform: translateX(-260px);
+    }
+    nav h2 {
+      font-size: 14px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,0.5);
+      margin: 0 0 8px;
+    }
+    .nav-link {
+      padding: 10px 12px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      background: transparent;
+      border: none;
+      text-align: left;
+      transition: background 0.2s ease;
+    }
+    .nav-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .nav-link.active {
+      background: rgba(53,88,212,0.12);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    main {
+      flex: 1;
+      padding: 24px;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .screen {
+      display: none;
+      flex-direction: column;
+      gap: 24px;
+    }
+    .screen.active {
+      display: flex;
+    }
+    .section-card {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 12px 24px rgba(15,23,42,0.06);
+    }
+    .section-title {
+      margin: 0 0 16px;
+      font-size: 20px;
+    }
+    .kpi-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+    .kpi-card {
+      background: var(--muted);
+      padding: 16px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .kpi-label {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: rgba(0,0,0,0.55);
+    }
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 600;
+    }
+    .kpi-trend {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
+    .trend-up { color: #1e8e3e; }
+    .trend-down { color: var(--danger); }
+    .chart {
+      width: 100%;
+      height: 180px;
+      background: var(--muted);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .chart svg {
+      width: 100%;
+      height: 100%;
+    }
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .filter-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .input {
+      padding: 10px 12px;
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 10px;
+      background: #fff;
+      min-width: 200px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+    th {
+      background: rgba(0,0,0,0.02);
+      cursor: pointer;
+      position: relative;
+    }
+    th .sort-indicator {
+      margin-left: 6px;
+      font-size: 12px;
+      opacity: 0.6;
+    }
+    tr:hover {
+      background: rgba(53,88,212,0.05);
+    }
+    form {
+      display: grid;
+      gap: 16px;
+      max-width: 640px;
+    }
+    label {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-weight: 500;
+    }
+    textarea {
+      min-height: 120px;
+      resize: vertical;
+      padding: 10px 12px;
+      border: 1px solid rgba(0,0,0,0.12);
+      border-radius: 10px;
+    }
+    .button-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 10px 16px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: rgba(0,0,0,0.06);
+      color: var(--text);
+    }
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+    .btn:disabled {
+      background: rgba(0,0,0,0.08);
+      color: rgba(0,0,0,0.4);
+      cursor: not-allowed;
+    }
+    .btn:focus-visible {
+      outline: 2px solid rgba(53,88,212,0.4);
+      outline-offset: 2px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: rgba(53,88,212,0.12);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .two-column {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+    .timeline {
+      border-left: 2px solid rgba(0,0,0,0.08);
+      padding-left: 16px;
+      display: grid;
+      gap: 12px;
+    }
+    .timeline-item {
+      position: relative;
+      padding-left: 12px;
+    }
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -22px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: rgba(0,0,0,0.08);
+      font-weight: 600;
+    }
+    .status-chip[data-variant="success"] { background: rgba(30,142,62,0.16); color: #1e8e3e; }
+    .status-chip[data-variant="warning"] { background: rgba(212,125,53,0.16); color: #d47d35; }
+    .status-chip[data-variant="danger"] { background: rgba(214,69,69,0.16); color: var(--danger); }
+    .doc-list {
+      display: grid;
+      gap: 12px;
+    }
+    .doc-card {
+      border: 1px solid rgba(0,0,0,0.06);
+      border-radius: 12px;
+      padding: 16px;
+      background: var(--muted);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .insight-grid {
+      display: grid;
+      gap: 16px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+    .insight-card {
+      border-radius: 12px;
+      padding: 16px;
+      background: var(--muted);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .callout {
+      padding: 16px;
+      border-left: 4px solid var(--accent);
+      background: rgba(53,88,212,0.08);
+      border-radius: 12px;
+    }
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 200;
+    }
+    .modal-backdrop.visible {
+      display: flex;
+    }
+    .modal {
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 24px;
+      width: min(100%, 420px);
+      box-shadow: 0 18px 36px rgba(15,23,42,0.18);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    @media (max-width: 960px) {
+      nav {
+        position: fixed;
+        inset: 64px 0 auto 0;
+        height: calc(100vh - 64px);
+        z-index: 150;
+        box-shadow: 24px 0 48px rgba(15,23,42,0.12);
+      }
+      nav[aria-hidden="true"] {
+        transform: translateX(-260px);
+      }
+      main {
+        padding: 20px;
+      }
+    }
+    @media (max-width: 600px) {
+      header {
+        padding: 10px 16px;
+      }
+      .kpi-value {
+        font-size: 24px;
+      }
+      .panel-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .input {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header holds global navigation controls and branding; swap placeholder avatar/logo during integration. -->
+  <header>
+    <div class="brand">
+      <button class="sidebar-toggle" type="button" aria-expanded="true" aria-controls="sidebar">☰</button>
+      <div class="logo" aria-label="Aptify">AI</div>
+      <div>
+        <strong>Aptify Copilot Console</strong><br>
+        <small>AI-enhanced property management</small>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span class="badge">Pilot Workspace</span>
+      <button class="btn btn-secondary" type="button">Support</button>
+      <div class="avatar" role="presentation"></div>
+    </div>
+  </header>
+
+  <div class="app-shell">
+    <!-- Sidebar lists the primary experience modules; map to actual routes when wiring SPA. -->
+    <nav id="sidebar" aria-label="Primary" aria-hidden="false">
+      <div>
+        <h2>Navigate</h2>
+        <button class="nav-link active" data-target="dashboard">Executive Dashboard</button>
+        <button class="nav-link" data-target="console">AI Command Console</button>
+        <button class="nav-link" data-target="tenant">Tenant Hub</button>
+        <button class="nav-link" data-target="owner">Owner HQ</button>
+        <button class="nav-link" data-target="leases">Lease Contracts</button>
+        <button class="nav-link" data-target="maintenance">Maintenance Ops</button>
+        <button class="nav-link" data-target="inspections">Inspection Manager</button>
+        <button class="nav-link" data-target="documents">Documents Control</button>
+        <button class="nav-link" data-target="analytics">Analytics & Insights</button>
+        <button class="nav-link" data-target="payments">Rent & Cashflow</button>
+        <button class="nav-link" data-target="governance">Governance</button>
+        <button class="nav-link" data-target="knowledge">Knowledge Base</button>
+        <button class="nav-link" data-target="intake">AI Intake Ops</button>
+      </div>
+    </nav>
+
+    <!-- Main content swaps between feature mocks; replace placeholders with live components later. -->
+    <main>
+      <!-- Executive Dashboard aggregates KPI metrics, automation uplift, and alert timeline. -->
+      <section class="screen active" id="dashboard" aria-labelledby="dashboard-title">
+        <div class="section-card">
+          <h1 class="section-title" id="dashboard-title">Portfolio Health Overview</h1>
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <span class="kpi-label">Open Maintenance Issues</span>
+              <span class="kpi-value">126</span>
+              <span class="kpi-trend trend-down">▼ 6% vs last week</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">AI Resolved Queries</span>
+              <span class="kpi-value">482</span>
+              <span class="kpi-trend trend-up">▲ 18% automation</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">SLA Breach Risk</span>
+              <span class="kpi-value">9%</span>
+              <span class="kpi-trend trend-down">▼ 3% improvement</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Owner Satisfaction</span>
+              <span class="kpi-value">4.6★</span>
+              <span class="kpi-trend trend-up">▲ +0.4 QoQ</span>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="panel-header">
+            <h2 class="section-title">AI-Triage Volume (Last 7 Days)</h2>
+            <div class="filter-group">
+              <select class="input" aria-label="Location filter">
+                <option>All Regions</option>
+                <option>NSW Metro</option>
+                <option>QLD Coastal</option>
+              </select>
+              <select class="input" aria-label="Issue type filter">
+                <option>All Issue Types</option>
+                <option>Maintenance</option>
+                <option>Lease Renewal</option>
+                <option>Compliance</option>
+              </select>
+            </div>
+          </div>
+          <div class="chart" role="img" aria-label="Bar chart showing AI triage volume over last week">
+            <svg viewBox="0 0 320 120">
+              <rect x="20" y="40" width="30" height="60" rx="4" fill="#98a6ff"></rect>
+              <rect x="70" y="30" width="30" height="70" rx="4" fill="#6e82f5"></rect>
+              <rect x="120" y="20" width="30" height="80" rx="4" fill="#3558d4"></rect>
+              <rect x="170" y="28" width="30" height="72" rx="4" fill="#6e82f5"></rect>
+              <rect x="220" y="18" width="30" height="82" rx="4" fill="#3558d4"></rect>
+              <rect x="270" y="46" width="30" height="54" rx="4" fill="#98a6ff"></rect>
+              <text x="160" y="12" text-anchor="middle" font-size="12" fill="#1f2433">Automation rate 68%</text>
+            </svg>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="panel-header">
+            <h2 class="section-title">Critical Alerts</h2>
+            <button class="btn btn-primary" type="button">Create Alert Policy</button>
+          </div>
+          <div class="timeline">
+            <div class="timeline-item">
+              <strong>45 King St · Urgent Leak Escalated</strong>
+              <p>AI flagged repeat emergency. Vendor accepted ETA <strong>2 hrs</strong>. Awaiting owner approval.</p>
+            </div>
+            <div class="timeline-item">
+              <strong>Building 12 · Lift Maintenance Delay</strong>
+              <p>Copilot recommends alternate vendor due to SLA breach risk. Review before 4pm.</p>
+            </div>
+            <div class="timeline-item">
+              <strong>Compliance · Gas Certificate Expiring</strong>
+              <p>Four properties require documentation before <strong>30 Jun</strong>. Send reminders now.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI Command Console simulates copilot dialogue and quick action composer. -->
+      <section class="screen" id="console" aria-labelledby="console-title">
+        <div class="section-card">
+          <h1 class="section-title" id="console-title">AI Copilot Command Console</h1>
+          <div class="insight-grid">
+            <div class="insight-card">
+              <strong>Recent Sessions</strong>
+              <p>“Summarise outstanding maintenance for Building 12” → 3 jobs pending owner approval.</p>
+            </div>
+            <div class="insight-card">
+              <strong>Guardrail Snapshot</strong>
+              <p>92% of responses delivered with citations. 4 refusals triggered due to policy gaps.</p>
+            </div>
+            <div class="insight-card">
+              <strong>Adoption Trend</strong>
+              <p>Weekly active users: 61 (▲12). Average prompt cost $0.44.</p>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="panel-header">
+            <h2 class="section-title">Compose New Command</h2>
+            <div class="filter-group">
+              <select class="input" aria-label="Quick action template">
+                <option>Quick Actions</option>
+                <option>Log Maintenance Issue</option>
+                <option>Draft Tenant Reply</option>
+                <option>Generate Work Order</option>
+                <option>Create Owner Update</option>
+              </select>
+              <button class="btn btn-secondary" type="button">Attach File</button>
+            </div>
+          </div>
+          <textarea aria-label="Command input" placeholder="Ask the copilot to summarise tasks, draft replies, surface vendors, or analyse policies..."></textarea>
+          <div class="button-row">
+            <button class="btn btn-primary" type="button">Send Command</button>
+            <button class="btn btn-secondary" type="button">Preview Cited Sources</button>
+            <button class="btn btn-secondary" type="button">View Prompt History</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tenant Hub pairs tenant 360 snapshot with risk alerts and key communications. -->
+      <section class="screen" id="tenant" aria-labelledby="tenant-title">
+        <div class="section-card">
+          <h1 class="section-title" id="tenant-title">Tenant 360 Hub</h1>
+          <div class="callout">
+            Tenants at risk of arrears this week highlighted below. Update mitigation plans or convert to direct debit for stability.
+          </div>
+          <div class="panel-header" style="margin-top:16px;">
+            <h2 class="section-title" style="margin:0;">Tenant Portfolio</h2>
+            <input class="input" id="tenantSearch" type="search" placeholder="Search tenant or property" aria-label="Search tenants">
+          </div>
+          <div class="section-card" style="padding:0;">
+            <table aria-describedby="tenant-title" id="tenantTable">
+              <thead>
+                <tr>
+                  <th>Tenant</th>
+                  <th>Property</th>
+                  <th>Status</th>
+                  <th>Sentiment</th>
+                  <th>Next Action</th>
+                </tr>
+              </thead>
+              <tbody id="tenantBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title">Copilot Recommendations</h2>
+          <div class="insight-grid">
+            <div class="insight-card">
+              <strong>James Lee</strong>
+              <p>Recommend proactive call after work order completion. Offer rent relief discussion if repeated delays.</p>
+            </div>
+            <div class="insight-card">
+              <strong>Sonia Patel</strong>
+              <p>AI suggests automated lease renewal outreach referencing compliance clause NSW-12b.</p>
+            </div>
+            <div class="insight-card">
+              <strong>Eva Thompson</strong>
+              <p>High satisfaction but pending insurance certificate upload. Prompt within 48 hours.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Owner HQ collates approvals, insights, and communication trail. -->
+      <section class="screen" id="owner" aria-labelledby="owner-title">
+        <div class="section-card">
+          <h1 class="section-title" id="owner-title">Owner Engagement HQ</h1>
+          <div class="panel-header">
+            <h2 class="section-title" style="margin:0;">Approval Queue</h2>
+            <button class="btn btn-primary" type="button">Request Owner Decision</button>
+          </div>
+          <div class="section-card" style="padding:0;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Owner</th>
+                  <th>Request</th>
+                  <th>Value</th>
+                  <th>Due</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Harbourline Trust</td>
+                  <td>Approve $1,350 roof repair</td>
+                  <td>$1,350</td>
+                  <td>Today</td>
+                  <td><span class="status-chip" data-variant="warning">Awaiting approval</span></td>
+                </tr>
+                <tr>
+                  <td>Summit Capital</td>
+                  <td>Lease renewal 12 Market Ave</td>
+                  <td>$780/wk</td>
+                  <td>16 Jun</td>
+                  <td><span class="status-chip" data-variant="success">Owner approved</span></td>
+                </tr>
+                <tr>
+                  <td>Pacific Homes</td>
+                  <td>Capital works budget FY25</td>
+                  <td>$45k</td>
+                  <td>30 Jun</td>
+                  <td><span class="status-chip" data-variant="warning">Pending review</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title">Owner Insight Timeline</h2>
+          <div class="timeline">
+            <div class="timeline-item">
+              <strong>Weekly Summary Sent</strong>
+              <p>AI-generated narrative delivered to Harbourline Trust. Engagement score 4.7/5.</p>
+            </div>
+            <div class="timeline-item">
+              <strong>Decision Prediction</strong>
+              <p>Summit Capital likely to approve lease uplift. Copilot suggests highlighting reduced vacancy.</p>
+            </div>
+            <div class="timeline-item">
+              <strong>Churn Risk Flag</strong>
+              <p>Pacific Homes showing declining sentiment. Schedule strategy call this week.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Lease Contracts screen includes renewal pipeline and AI-assisted drafting form. -->
+      <section class="screen" id="leases" aria-labelledby="leases-title">
+        <div class="section-card">
+          <h1 class="section-title" id="leases-title">Lease Lifecycle Management</h1>
+          <div class="panel-header">
+            <h2 class="section-title" style="margin:0;">Upcoming Renewals</h2>
+            <select class="input" aria-label="Region filter">
+              <option>All Regions</option>
+              <option>NSW</option>
+              <option>QLD</option>
+              <option>VIC</option>
+            </select>
+          </div>
+          <div class="section-card" style="padding:0;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Property</th>
+                  <th>Tenant</th>
+                  <th>End Date</th>
+                  <th>AI Recommendation</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>12 Market Ave</td>
+                  <td>Sonia Patel</td>
+                  <td>30 Jun 2024</td>
+                  <td>Renew +3% citing market benchmark NSW-InnerWest</td>
+                  <td><span class="status-chip" data-variant="warning">Awaiting owner sign-off</span></td>
+                </tr>
+                <tr>
+                  <td>88 Coast Rd</td>
+                  <td>Liam Chen</td>
+                  <td>12 Jul 2024</td>
+                  <td>Offer 6-month extension; highlight solar upgrade works</td>
+                  <td><span class="status-chip" data-variant="success">Draft sent</span></td>
+                </tr>
+                <tr>
+                  <td>5 Harbour Pl</td>
+                  <td>Lucas Miller</td>
+                  <td>28 May 2024</td>
+                  <td>Recommend rent freeze due to ongoing repairs</td>
+                  <td><span class="status-chip" data-variant="danger">Legal review required</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title">Draft New Lease</h2>
+          <form id="leaseForm" novalidate>
+            <label>
+              Property Address *
+              <input class="input" type="text" name="leaseProperty" required placeholder="e.g. 45 King St, Sydney">
+            </label>
+            <label>
+              Tenant Name *
+              <input class="input" type="text" name="leaseTenant" required placeholder="Tenant full name">
+            </label>
+            <label>
+              Lease Term *
+              <select class="input" name="leaseTerm" required>
+                <option value="">Select term</option>
+                <option>6 months</option>
+                <option>12 months</option>
+                <option>18 months</option>
+              </select>
+            </label>
+            <label>
+              Weekly Rent *
+              <input class="input" type="number" name="leaseRent" required min="0" placeholder="e.g. 720">
+            </label>
+            <label>
+              Special Clauses
+              <textarea name="leaseClauses" placeholder="Add optional clauses, inclusions, or incentives"></textarea>
+            </label>
+            <div class="button-row">
+              <button class="btn btn-primary" type="submit">Generate Lease Draft</button>
+              <button class="btn btn-secondary" type="reset">Clear</button>
+            </div>
+            <p id="leaseFeedback" role="alert" style="color:var(--danger);font-weight:600;"></p>
+          </form>
+        </div>
+      </section>
+
+      <!-- Maintenance Ops retains sortable table, filtering, and approval modal for work orders. -->
+      <section class="screen" id="maintenance" aria-labelledby="maintenance-title">
+        <div class="section-card">
+          <div class="panel-header">
+            <h1 class="section-title" id="maintenance-title">Maintenance Work Orders</h1>
+            <div class="filter-group">
+              <input class="input" id="workOrderSearch" type="search" placeholder="Search by property, tenant, or vendor" aria-label="Search work orders">
+              <select class="input" aria-label="Status filter" id="statusFilter">
+                <option value="all">All Statuses</option>
+                <option value="Scheduled">Scheduled</option>
+                <option value="Awaiting Approval">Awaiting Approval</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+          </div>
+          <div class="section-card" style="padding:0;">
+            <table aria-describedby="maintenance-title" id="workOrdersTable">
+              <thead>
+                <tr>
+                  <th data-sort="property">Property <span class="sort-indicator">⇅</span></th>
+                  <th data-sort="tenant">Tenant <span class="sort-indicator">⇅</span></th>
+                  <th data-sort="issue">Issue <span class="sort-indicator">⇅</span></th>
+                  <th data-sort="priority">Priority <span class="sort-indicator">⇅</span></th>
+                  <th data-sort="status">Status <span class="sort-indicator">⇅</span></th>
+                  <th data-sort="vendor">Vendor <span class="sort-indicator">⇅</span></th>
+                  <th data-sort="due">Due <span class="sort-indicator">⇅</span></th>
+                </tr>
+              </thead>
+              <tbody id="workOrderBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title">Create New Work Order</h2>
+          <form id="workOrderForm" novalidate>
+            <label>
+              Property Address *
+              <input class="input" type="text" name="property" required placeholder="e.g. 45 King St, Sydney">
+            </label>
+            <label>
+              Tenant Email *
+              <input class="input" type="email" name="email" required placeholder="tenant@example.com">
+            </label>
+            <label>
+              Issue Summary *
+              <textarea name="summary" required placeholder="Describe the problem reported..."></textarea>
+            </label>
+            <label>
+              Priority *
+              <select class="input" name="priority" required>
+                <option value="">Select priority</option>
+                <option>Urgent</option>
+                <option>High</option>
+                <option>Medium</option>
+                <option>Low</option>
+              </select>
+            </label>
+            <label>
+              Target Vendor Suggestion
+              <input class="input" type="text" name="vendor" placeholder="e.g. RoofSure">
+            </label>
+            <label>
+              Desired Completion Date *
+              <input class="input" type="date" name="due" required>
+            </label>
+            <div class="button-row">
+              <button class="btn btn-primary" type="submit" id="submitWorkOrder">Submit for Approval</button>
+              <button class="btn btn-secondary" type="reset">Clear</button>
+            </div>
+            <p id="formFeedback" role="alert" style="color:var(--danger);font-weight:600;"></p>
+          </form>
+        </div>
+      </section>
+
+      <!-- Inspection Manager surfaces upcoming inspections and AI assistance tasks. -->
+      <section class="screen" id="inspections" aria-labelledby="inspections-title">
+        <div class="section-card">
+          <h1 class="section-title" id="inspections-title">Inspection Schedule</h1>
+          <div class="two-column">
+            <div>
+              <h3>Upcoming Visits</h3>
+              <ul>
+                <li>Building 12 · Entry inspection · 14 Jun · Assigned to <strong>Amy Walsh</strong></li>
+                <li>45 King St · Make-good follow-up · 16 Jun · High priority</li>
+                <li>101 Parkside · Annual safety check · 18 Jun · Tenant confirmed access</li>
+              </ul>
+            </div>
+            <div>
+              <h3>AI Checklist Support</h3>
+              <p>Copilot pre-filled previous defect list. Drone photo review flagged potential gutter damage for Building 12.</p>
+              <button class="btn btn-secondary" type="button">Download Inspection Pack</button>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title">Inspection Insights</h2>
+          <div class="timeline">
+            <div class="timeline-item">
+              <strong>Auto-generated Report</strong>
+              <p>Exit inspection for Bayview Apartments compiled with 34 annotated photos.</p>
+            </div>
+            <div class="timeline-item">
+              <strong>Defect Trend Alert</strong>
+              <p>Recurring mould in 23 Greenway bathrooms. Suggest preventative maintenance approval.</p>
+            </div>
+            <div class="timeline-item">
+              <strong>Dispute Resolution</strong>
+              <p>Copilot summarised evidence for James Lee bond discussion. Awaiting owner response.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Documents Control provides searchable repository status and AI classification indicators. -->
+      <section class="screen" id="documents" aria-labelledby="documents-title">
+        <div class="section-card">
+          <h1 class="section-title" id="documents-title">Document Compliance Control</h1>
+          <div class="panel-header">
+            <h2 class="section-title" style="margin:0;">Repository Overview</h2>
+            <input class="input" id="documentSearch" type="search" placeholder="Search documents" aria-label="Search documents">
+          </div>
+          <div class="section-card" style="padding:0;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Document</th>
+                  <th>Type</th>
+                  <th>Property</th>
+                  <th>Expiry</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="documentBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title">AI Validation Highlights</h2>
+          <div class="doc-list">
+            <div class="doc-card">
+              <strong>Insurance Verification</strong>
+              <p>RoofSure policy expires <strong>30 Jun</strong>. Copilot drafted reminder email to vendor.</p>
+            </div>
+            <div class="doc-card">
+              <strong>ID Checks</strong>
+              <p>Tenant upload auto-classified as NSW driver licence. Confidence 97%; manual review optional.</p>
+            </div>
+            <div class="doc-card">
+              <strong>Retention Notice</strong>
+              <p>Lease files older than 7 years queued for deletion. Awaiting compliance sign-off.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Analytics & Insights section surfaces charts, forecasts, and narrative summaries. -->
+      <section class="screen" id="analytics" aria-labelledby="analytics-title">
+        <div class="section-card">
+          <h1 class="section-title" id="analytics-title">Analytics & Insights</h1>
+          <div class="panel-header">
+            <h2 class="section-title" style="margin:0;">Executive Narrative</h2>
+            <button class="btn btn-secondary" type="button">Download Board Pack</button>
+          </div>
+          <p>The copilot forecasts <strong>$1.42M</strong> rental revenue next quarter (▲5% QoQ) with occupancy steady at <strong>96%</strong>. SLA compliance projected to reach <strong>93%</strong> if backlog clearance plan executed.</p>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title">Forecast & Scenario</h2>
+          <div class="two-column">
+            <div class="chart" role="img" aria-label="Line chart for revenue forecast">
+              <svg viewBox="0 0 320 160">
+                <polyline points="10,140 60,120 110,100 160,95 210,80 260,70 310,60" fill="none" stroke="#3558d4" stroke-width="4" stroke-linecap="round"></polyline>
+                <circle cx="260" cy="70" r="6" fill="#3558d4"></circle>
+                <text x="260" y="50" text-anchor="middle" font-size="12" fill="#1f2433">Q3 Forecast $480k</text>
+              </svg>
+            </div>
+            <div>
+              <h3>What-if Scenario</h3>
+              <p>If vacancy rises by 2%, revenue dips by $64k; copilot suggests accelerated leasing campaign in NSW Metro.</p>
+              <button class="btn btn-primary" type="button">Run Scenario</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Rent & Cashflow view presents payment health, arrears, and owner payout summary. -->
+      <section class="screen" id="payments" aria-labelledby="payments-title">
+        <div class="section-card">
+          <h1 class="section-title" id="payments-title">Rent & Cashflow</h1>
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <span class="kpi-label">Rent Collected (MTD)</span>
+              <span class="kpi-value">$612k</span>
+              <span class="kpi-trend trend-up">▲ +7% vs last month</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Arrears &gt;7 days</span>
+              <span class="kpi-value">14</span>
+              <span class="kpi-trend trend-down">▼ 4 tenants</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Direct Debit Adoption</span>
+              <span class="kpi-value">68%</span>
+              <span class="kpi-trend trend-up">▲ +6 pts</span>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <div class="panel-header">
+            <h2 class="section-title" style="margin:0;">Payment & Arrears Table</h2>
+            <button class="btn btn-secondary" type="button">Export Ledger</button>
+          </div>
+          <div class="section-card" style="padding:0;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tenant</th>
+                  <th>Property</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Next Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>James Lee</td>
+                  <td>45 King St</td>
+                  <td>$1,150</td>
+                  <td><span class="status-chip" data-variant="danger">7 days overdue</span></td>
+                  <td>Copilot sent payment plan draft</td>
+                </tr>
+                <tr>
+                  <td>Maya Singh</td>
+                  <td>61 Pine View</td>
+                  <td>$820</td>
+                  <td><span class="status-chip" data-variant="success">Paid</span></td>
+                  <td>Auto-reconciled</td>
+                </tr>
+                <tr>
+                  <td>Oliver West</td>
+                  <td>39 Summit Rd</td>
+                  <td>$1,040</td>
+                  <td><span class="status-chip" data-variant="warning">Due tomorrow</span></td>
+                  <td>Send reminder if unpaid 9am</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Governance view emphasises audit logs, guardrails, and risk alerts. -->
+      <section class="screen" id="governance" aria-labelledby="governance-title">
+        <div class="section-card">
+          <h1 class="section-title" id="governance-title">Audit & Governance</h1>
+          <div class="callout">
+            Guardrails enforced: human approval required for spend over $1,500 and all tenant eviction notices. Overrides <strong>2</strong> this month.
+          </div>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title">Audit Log Highlights</h2>
+          <div class="timeline">
+            <div class="timeline-item">
+              <strong>Work order override recorded</strong>
+              <p>Manager approved AI suggestion without citation. Compliance alerted for review.</p>
+            </div>
+            <div class="timeline-item">
+              <strong>New policy deployed</strong>
+              <p>Tenant communication guardrail updated to require dual approval for disputes.</p>
+            </div>
+            <div class="timeline-item">
+              <strong>Risk score spike</strong>
+              <p>Unusual document exports detected. All downloads confirmed legitimate.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Knowledge Base showcases RAG corpus health and ingestion status. -->
+      <section class="screen" id="knowledge" aria-labelledby="knowledge-title">
+        <div class="section-card">
+          <h1 class="section-title" id="knowledge-title">Knowledge Corpus</h1>
+          <div class="insight-grid">
+            <div class="insight-card">
+              <strong>Corpus Size</strong>
+              <p>1,824 documents indexed · 96% citation accuracy</p>
+            </div>
+            <div class="insight-card">
+              <strong>Freshness</strong>
+              <p>Critical policies updated ≤14 days. 3 documents flagged as obsolete.</p>
+            </div>
+            <div class="insight-card">
+              <strong>User Feedback</strong>
+              <p>72 upvotes · 3 downvotes. Retraining scheduled Friday.</p>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title">Latest Ingestions</h2>
+          <div class="doc-list">
+            <div class="doc-card">
+              <strong>NSW Strata Reform 2024</strong>
+              <p>Auto-tagged across 32 properties. Citations active immediately.</p>
+            </div>
+            <div class="doc-card">
+              <strong>Vendor Insurance Guidelines</strong>
+              <p>Obsolescence detector flagged outdated clause. Replacement pending compliance approval.</p>
+            </div>
+            <div class="doc-card">
+              <strong>Tenant Welcome Pack v5</strong>
+              <p>Copilot summarised key policy updates for onboarding journey.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI Intake Ops summarises autonomous call/email handling performance. -->
+      <section class="screen" id="intake" aria-labelledby="intake-title">
+        <div class="section-card">
+          <h1 class="section-title" id="intake-title">AI Tenant Intake Operations</h1>
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <span class="kpi-label">Calls Automated</span>
+              <span class="kpi-value">63%</span>
+              <span class="kpi-trend trend-up">▲ +9 pts</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Average Handle Time</span>
+              <span class="kpi-value">2.8 min</span>
+              <span class="kpi-trend trend-down">▼ 0.6 min</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-label">Escalations</span>
+              <span class="kpi-value">14</span>
+              <span class="kpi-trend trend-up">▲ 3 flagged emergencies</span>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <h2 class="section-title">Realtime Queue</h2>
+          <div class="section-card" style="padding:0;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Channel</th>
+                  <th>Tenant</th>
+                  <th>Issue Summary</th>
+                  <th>Confidence</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Voice</td>
+                  <td>Grace Howard</td>
+                  <td>Water heater outage · verified access window</td>
+                  <td>91%</td>
+                  <td><span class="status-chip" data-variant="warning">Awaiting approval</span></td>
+                </tr>
+                <tr>
+                  <td>Email</td>
+                  <td>Marcus O'Neill</td>
+                  <td>Request payment plan extension</td>
+                  <td>95%</td>
+                  <td><span class="status-chip" data-variant="success">Auto-routed</span></td>
+                </tr>
+                <tr>
+                  <td>Voice</td>
+                  <td>Maya Singh</td>
+                  <td>Confirm inspection schedule</td>
+                  <td>88%</td>
+                  <td><span class="status-chip" data-variant="success">Completed</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal handles confirmation before dispatching maintenance work orders. -->
+  <div class="modal-backdrop" id="confirmationModal" role="presentation">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc">
+      <h2 id="modal-title">Submit Work Order?</h2>
+      <p id="modal-desc">Send this work order to the assigned approver and notify the recommended vendor.</p>
+      <div class="button-row">
+        <button class="btn btn-primary" type="button" id="confirmSubmit">Confirm & Send</button>
+        <button class="btn btn-secondary" type="button" id="cancelModal">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const sidebar = document.getElementById('sidebar');
+    const toggleBtn = document.querySelector('.sidebar-toggle');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const screens = document.querySelectorAll('.screen');
+    const workOrderSearch = document.getElementById('workOrderSearch');
+    const statusFilter = document.getElementById('statusFilter');
+    const workOrderBody = document.getElementById('workOrderBody');
+    const workOrderForm = document.getElementById('workOrderForm');
+    const formFeedback = document.getElementById('formFeedback');
+    const submitWorkOrder = document.getElementById('submitWorkOrder');
+    const modal = document.getElementById('confirmationModal');
+    const confirmSubmit = document.getElementById('confirmSubmit');
+    const cancelModal = document.getElementById('cancelModal');
+    const leaseForm = document.getElementById('leaseForm');
+    const leaseFeedback = document.getElementById('leaseFeedback');
+    const documentSearch = document.getElementById('documentSearch');
+    const documentBody = document.getElementById('documentBody');
+    const tenantSearch = document.getElementById('tenantSearch');
+    const tenantBody = document.getElementById('tenantBody');
+
+    toggleBtn.addEventListener('click', () => {
+      const hidden = sidebar.getAttribute('aria-hidden') === 'true';
+      sidebar.setAttribute('aria-hidden', hidden ? 'false' : 'true');
+      toggleBtn.setAttribute('aria-expanded', hidden ? 'true' : 'false');
+    });
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.forEach(l => l.classList.remove('active'));
+        screens.forEach(screen => screen.classList.remove('active'));
+        link.classList.add('active');
+        const screen = document.getElementById(link.dataset.target);
+        if (screen) screen.classList.add('active');
+        if (window.innerWidth < 960) {
+          sidebar.setAttribute('aria-hidden', 'true');
+          toggleBtn.setAttribute('aria-expanded', 'false');
+        }
+      });
+    });
+
+    const maintenanceData = [
+      { property: '45 King St', tenant: 'James Lee', issue: 'Roof leak', priority: 'Urgent', status: 'Awaiting Approval', vendor: 'RoofSure', due: 'Today' },
+      { property: '12 Market Ave', tenant: 'Sonia Patel', issue: 'Lift outage', priority: 'High', status: 'In Progress', vendor: 'Elevate NSW', due: 'Tomorrow' },
+      { property: '88 Coast Rd', tenant: 'Liam Chen', issue: 'Solar inverter fault', priority: 'Medium', status: 'Scheduled', vendor: 'SunGrid', due: '21 Jun' },
+      { property: '23 Greenway', tenant: 'Amelia Ross', issue: 'Mould treatment', priority: 'High', status: 'Awaiting Approval', vendor: 'FreshAir Co', due: '18 Jun' },
+      { property: '5 Harbour Pl', tenant: 'Lucas Miller', issue: 'Hot water outage', priority: 'Urgent', status: 'In Progress', vendor: 'HeatWave', due: 'Today' },
+      { property: '77 River Rd', tenant: 'Zara Kahn', issue: 'Fence repair', priority: 'Low', status: 'Scheduled', vendor: 'SafeBuild', due: '30 Jun' },
+      { property: '18 Orchard St', tenant: "Marcus O'Neill", issue: 'HVAC service', priority: 'Medium', status: 'Completed', vendor: 'CoolBreeze', due: '12 Jun' },
+      { property: '61 Pine View', tenant: 'Maya Singh', issue: 'Window seal', priority: 'Low', status: 'Scheduled', vendor: 'ClearGlass', due: '25 Jun' },
+      { property: '39 Summit Rd', tenant: 'Oliver West', issue: 'Fire panel fault', priority: 'High', status: 'In Progress', vendor: 'SafeLine', due: '16 Jun' },
+      { property: '101 Parkside', tenant: 'Eva Thompson', issue: 'Carpet flood', priority: 'Urgent', status: 'Awaiting Approval', vendor: 'DrySmart', due: 'Today' }
+    ];
+
+    const documentData = [
+      { name: 'RoofSure Insurance', type: 'Insurance Certificate', property: '45 King St', expiry: '30 Jun 2024', status: 'Expiring' },
+      { name: 'Tenant ID - James Lee', type: 'ID Verification', property: '45 King St', expiry: 'Verified', status: 'Valid' },
+      { name: 'Gas Safety - Building 12', type: 'Safety Certificate', property: 'Building 12', expiry: '12 Jul 2024', status: 'Review' },
+      { name: 'Lease - 12 Market Ave', type: 'Lease Agreement', property: '12 Market Ave', expiry: '30 Jun 2024', status: 'Renewal pending' },
+      { name: 'Vendor Licence - HeatWave', type: 'Licence', property: 'Multi-property', expiry: '02 Feb 2025', status: 'Valid' },
+      { name: 'Inspection Photos - Bayview', type: 'Media', property: 'Bayview Apartments', expiry: '-', status: 'Archived' },
+      { name: 'Insurance - SafeBuild', type: 'Insurance Certificate', property: 'Multi-property', expiry: '01 Sep 2024', status: 'Valid' },
+      { name: 'Consent Form - Eva Thompson', type: 'Consent', property: '101 Parkside', expiry: 'Verified', status: 'Valid' }
+    ];
+
+    const tenantData = [
+      { tenant: 'James Lee', property: '45 King St', status: 'At risk (arrears)', sentiment: 'Concerned', action: 'Schedule payment plan call' },
+      { tenant: 'Sonia Patel', property: '12 Market Ave', status: 'On track', sentiment: 'Positive', action: 'Send renewal draft' },
+      { tenant: 'Liam Chen', property: '88 Coast Rd', status: 'Pending inspection', sentiment: 'Neutral', action: 'Confirm solar follow-up' },
+      { tenant: 'Maya Singh', property: '61 Pine View', status: 'Stable', sentiment: 'Happy', action: 'Share inspection reminder' },
+      { tenant: 'Eva Thompson', property: '101 Parkside', status: 'Awaiting docs', sentiment: 'Positive', action: 'Request insurance upload' },
+      { tenant: "Marcus O'Neill", property: '18 Orchard St', status: 'On payment plan', sentiment: 'Neutral', action: 'Review arrangement on 20 Jun' }
+    ];
+
+    const renderMaintenance = data => {
+      workOrderBody.innerHTML = data.map(item => `
+        <tr>
+          <td>${item.property}</td>
+          <td>${item.tenant}</td>
+          <td>${item.issue}</td>
+          <td>${item.priority}</td>
+          <td>${item.status}</td>
+          <td>${item.vendor}</td>
+          <td>${item.due}</td>
+        </tr>
+      `).join('');
+    };
+
+    const renderDocuments = data => {
+      documentBody.innerHTML = data.map(item => {
+        const variant = item.status.toLowerCase().includes('expire') || item.status.toLowerCase().includes('pending') ? 'warning' : item.status === 'Valid' ? 'success' : 'danger';
+        return `
+          <tr>
+            <td>${item.name}</td>
+            <td>${item.type}</td>
+            <td>${item.property}</td>
+            <td>${item.expiry}</td>
+            <td><span class="status-chip" data-variant="${variant}">${item.status}</span></td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    const renderTenants = data => {
+      tenantBody.innerHTML = data.map(item => {
+        const variant = item.status.toLowerCase().includes('risk') ? 'danger' : item.status.toLowerCase().includes('plan') ? 'warning' : 'success';
+        return `
+          <tr>
+            <td>${item.tenant}</td>
+            <td>${item.property}</td>
+            <td><span class="status-chip" data-variant="${variant}">${item.status}</span></td>
+            <td>${item.sentiment}</td>
+            <td>${item.action}</td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    let maintenanceSort = { key: null, direction: 1 };
+
+    const applyMaintenanceFilters = () => {
+      const query = workOrderSearch.value.toLowerCase();
+      const status = statusFilter.value;
+      let filtered = maintenanceData.filter(item => {
+        const matchesQuery = [item.property, item.tenant, item.vendor, item.issue].some(field => field.toLowerCase().includes(query));
+        const matchesStatus = status === 'all' || item.status === status;
+        return matchesQuery && matchesStatus;
+      });
+      if (maintenanceSort.key) {
+        filtered = filtered.slice().sort((a, b) => {
+          const aVal = a[maintenanceSort.key].toLowerCase();
+          const bVal = b[maintenanceSort.key].toLowerCase();
+          if (aVal < bVal) return -1 * maintenanceSort.direction;
+          if (aVal > bVal) return 1 * maintenanceSort.direction;
+          return 0;
+        });
+      }
+      renderMaintenance(filtered);
+    };
+
+    workOrderSearch.addEventListener('input', applyMaintenanceFilters);
+    statusFilter.addEventListener('change', applyMaintenanceFilters);
+
+    document.querySelectorAll('#workOrdersTable th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => {
+        const key = th.dataset.sort;
+        if (maintenanceSort.key === key) {
+          maintenanceSort.direction = -maintenanceSort.direction;
+        } else {
+          maintenanceSort.key = key;
+          maintenanceSort.direction = 1;
+        }
+        applyMaintenanceFilters();
+      });
+    });
+
+    documentSearch.addEventListener('input', () => {
+      const query = documentSearch.value.toLowerCase();
+      const filtered = documentData.filter(item => Object.values(item).some(value => value.toLowerCase().includes(query)));
+      renderDocuments(filtered);
+    });
+
+    tenantSearch.addEventListener('input', () => {
+      const query = tenantSearch.value.toLowerCase();
+      const filtered = tenantData.filter(item => Object.values(item).some(value => value.toLowerCase().includes(query)));
+      renderTenants(filtered);
+    });
+
+    const openModal = () => {
+      modal.classList.add('visible');
+      modal.querySelector('.modal').focus();
+      document.body.style.overflow = 'hidden';
+    };
+
+    const closeModal = () => {
+      modal.classList.remove('visible');
+      document.body.style.overflow = '';
+      submitWorkOrder.focus();
+    };
+
+    workOrderForm.addEventListener('submit', e => {
+      e.preventDefault();
+      formFeedback.style.color = 'var(--danger)';
+      formFeedback.textContent = '';
+      if (!workOrderForm.checkValidity()) {
+        formFeedback.textContent = 'Please complete required fields and provide a valid email.';
+        workOrderForm.reportValidity();
+        return;
+      }
+      openModal();
+    });
+
+    confirmSubmit.addEventListener('click', () => {
+      closeModal();
+      formFeedback.style.color = '#1e8e3e';
+      formFeedback.textContent = 'Work order submitted to approver. AI will monitor SLA status.';
+      workOrderForm.reset();
+      setTimeout(() => {
+        formFeedback.style.color = 'var(--danger)';
+        formFeedback.textContent = '';
+      }, 4000);
+    });
+
+    cancelModal.addEventListener('click', closeModal);
+    modal.addEventListener('click', event => {
+      if (event.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape' && modal.classList.contains('visible')) {
+        closeModal();
+      }
+    });
+
+    leaseForm.addEventListener('submit', event => {
+      event.preventDefault();
+      leaseFeedback.style.color = 'var(--danger)';
+      leaseFeedback.textContent = '';
+      if (!leaseForm.checkValidity()) {
+        leaseFeedback.textContent = 'Please complete all required lease fields.';
+        leaseForm.reportValidity();
+        return;
+      }
+      leaseFeedback.style.color = '#1e8e3e';
+      leaseFeedback.textContent = 'Lease draft generated. Legal review queued with AI risk summary.';
+      leaseForm.reset();
+      setTimeout(() => {
+        leaseFeedback.style.color = 'var(--danger)';
+        leaseFeedback.textContent = '';
+      }, 4000);
+    });
+
+    renderMaintenance(maintenanceData);
+    renderDocuments(documentData);
+    renderTenants(tenantData);
+    applyMaintenanceFilters();
+  </script>
+</body>
+</html>
