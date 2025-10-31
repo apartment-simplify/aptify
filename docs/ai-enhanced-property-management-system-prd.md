@@ -153,6 +153,22 @@
 - **Technical Notes**: Train classifiers on historical resolution data; incorporate keyword rules and sentiment analysis; expose priority state via real-time API/WebSocket; log overrides for continuous model tuning.
 - **Metrics for Success**: ≥85% accuracy in urgency classification; high-priority tasks addressed within SLA 95% of the time; manual overrides decrease by 30% as model matures.
 
+### 4.14 Email Classification and Tagging
+- **Feature Overview**: Provide automated email triage that categorises, tags, and routes inbound communications to the right workflows.
+- **Core Functionality**: Detect intent (maintenance, payments, compliance, general enquiry), apply configurable labels, map emails to existing tickets or create new ones, and surface suggested next actions within the agent workspace.
+- **Goals / Benefits**: Reduce manual inbox triage, ensure consistent tagging for reporting, and accelerate assignment to responsible teams.
+- **User Flow**: Email received → AI analyses subject/body/attachments → system assigns category and tags → linked ticket updated or created → agent reviews and confirms routing.
+- **Technical Notes**: Leverage fine-tuned classifiers with continual learning from historical email data; support IMAP/API ingestion; maintain audit trail of classification confidence and overrides.
+- **Metrics for Success**: ≥90% precision/recall on top-level categories; 50% reduction in average email triage time; <5% of emails require reclassification by agents.
+
+### 4.15 Feedback-Driven Model Optimisation
+- **Feature Overview**: Capture explicit agent feedback on AI actions (classifications, drafts, recommendations) to improve model performance over time.
+- **Core Functionality**: Provide in-line thumbs up/down and correction forms, log contextual metadata, route negative feedback to review queue, and incorporate validated signals into retraining datasets.
+- **Goals / Benefits**: Maintain high model accuracy, build user trust through responsive improvements, and create governance artefacts for compliance.
+- **User Flow**: Agent reviews AI output → submits feedback if adjustments needed → system stores annotated example → ops team reviews, labels, and pushes to training pipeline → updated models deployed with changelog.
+- **Technical Notes**: Store feedback data in secure repository with role-based access; integrate with ML Ops workflows for evaluation, A/B testing, and automated monitoring dashboards.
+- **Metrics for Success**: ≥60% of negative feedback resolved within one sprint; measurable uplift in model accuracy per release; maintain traceability between feedback items and model updates.
+
 ## 5. End-to-End Workflows
 
 ### 5.1 Issue Intake and Classification
