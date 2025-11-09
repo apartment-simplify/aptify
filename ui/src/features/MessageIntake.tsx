@@ -81,9 +81,11 @@ const categoryFilterOptions: Array<EmailCategory | "All"> = [
 const statusFilterOptions: Array<EmailStatus | "All"> = ["All", "New", "In Review", "Resolved"];
 
 const statusAccentClass: Record<EmailStatus, string> = {
-  New: "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200",
-  "In Review": "bg-sky-100 text-sky-800 dark:bg-sky-500/20 dark:text-sky-200",
-  Resolved: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200"
+  New: "border border-amber-500 bg-amber-500 text-white shadow-[0_0_0_1px_rgba(249,115,22,0.35)] dark:bg-amber-500 dark:text-amber-50",
+  "In Review":
+    "border border-sky-500 bg-sky-500 text-white shadow-[0_0_0_1px_rgba(14,165,233,0.35)] dark:bg-sky-500 dark:text-sky-50",
+  Resolved:
+    "border border-emerald-500 bg-emerald-500 text-white shadow-[0_0_0_1px_rgba(16,185,129,0.35)] dark:bg-emerald-500 dark:text-emerald-50"
 };
 
 const categoryAccentClass: Record<EmailCategory, string> = {
