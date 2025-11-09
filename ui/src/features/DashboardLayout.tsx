@@ -8,7 +8,7 @@ interface DashboardLayoutProps {
 export function DashboardLayout({ title, children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-white text-slate-900 antialiased">
-      <header className="border-b border-slate-200 bg-white">
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur">
         <nav className="flex w-full items-center justify-between py-5">
           <div className="flex items-center gap-3">
             <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10 text-sky-500">
