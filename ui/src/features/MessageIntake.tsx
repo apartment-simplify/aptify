@@ -120,8 +120,8 @@ export function MessageIntake() {
   return (
     <section className="flex h-full flex-col gap-6">
       <header className="space-y-2 animate-fade-in-up">
-        <h2 className="text-lg font-semibold text-slate-100">Message Intake Orchestration</h2>
-        <p className="text-sm text-slate-400">
+        <h2 className="text-lg font-semibold text-slate-900">Message Intake Orchestration</h2>
+        <p className="text-sm text-slate-500">
           Monitor and categorize recent messages funneled through the Aptify intake pipeline.
         </p>
       </header>
@@ -140,11 +140,11 @@ export function MessageIntake() {
         />
       </div>
 
-      <div className="flex flex-col gap-4 rounded-2xl bg-slate-900/60 p-5 shadow-xl shadow-slate-950/20 ring-1 ring-slate-800">
+      <div className="flex flex-col gap-4 rounded-2xl bg-white p-5 shadow-xl shadow-slate-200/60 ring-1 ring-slate-200">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <p className="text-sm font-medium text-slate-300">Filter messages</p>
+          <p className="text-sm font-medium text-slate-600">Filter messages</p>
           <div className="flex flex-wrap gap-3">
-            <label className="flex items-center gap-2 text-sm text-slate-300">
+            <label className="flex items-center gap-2 text-sm text-slate-600">
               <span className="hidden">Category</span>
               <select
                 aria-label="Filter by category"
@@ -152,7 +152,7 @@ export function MessageIntake() {
                 onChange={(event) =>
                   setSelectedCategory(event.target.value as EmailCategory | "All")
                 }
-                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 shadow-sm transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
               >
                 {categoryFilterOptions.map((option) => (
                   <option key={option} value={option}>
@@ -161,13 +161,13 @@ export function MessageIntake() {
                 ))}
               </select>
             </label>
-            <label className="flex items-center gap-2 text-sm text-slate-300">
+            <label className="flex items-center gap-2 text-sm text-slate-600">
               <span className="hidden">Status</span>
               <select
                 aria-label="Filter by status"
                 value={selectedStatus}
                 onChange={(event) => setSelectedStatus(event.target.value as EmailStatus | "All")}
-                className="rounded-lg border border-slate-700 bg-slate-900 px-3 py-2 text-sm text-slate-100 shadow-sm transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500/40"
               >
                 {statusFilterOptions.map((option) => (
                   <option key={option} value={option}>
@@ -179,9 +179,9 @@ export function MessageIntake() {
           </div>
         </div>
 
-        <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-950/60">
-          <table className="min-w-full divide-y divide-slate-800 text-sm">
-            <thead className="bg-slate-900/80 text-xs uppercase tracking-tight text-slate-400">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+          <table className="min-w-full divide-y divide-slate-200 text-sm">
+            <thead className="bg-slate-100 text-xs uppercase tracking-tight text-slate-500">
               <tr>
                 <th className="px-4 py-3 text-left font-medium">Sender</th>
                 <th className="px-4 py-3 text-left font-medium">Subject</th>
@@ -189,22 +189,22 @@ export function MessageIntake() {
                 <th className="px-4 py-3 text-left font-medium">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-900/60 text-slate-200">
+            <tbody className="divide-y divide-slate-100 text-slate-700">
               {filteredEmails.map((email, index) => (
                 <tr
                   key={email.id}
-                  className="animate-fade-in-up transition hover:bg-slate-900/60"
+                  className="animate-fade-in-up transition hover:bg-slate-50"
                   style={{ animationDelay: `${index * 60}ms` }}
                 >
                   <td className="px-4 py-4 align-top text-sm font-medium">
                     <div className="flex flex-col">
                       <span>{email.sender}</span>
-                      <span className="text-xs text-slate-500">
+                      <span className="text-xs text-slate-400">
                         {new Date(email.receivedAt).toLocaleString()}
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-4 align-top text-sm text-slate-300">{email.subject}</td>
+                  <td className="px-4 py-4 align-top text-sm text-slate-600">{email.subject}</td>
                   <td className="px-4 py-4 align-top text-sm font-medium">
                     <span className={categoryAccentClass[email.category]}>{email.category}</span>
                   </td>
@@ -217,7 +217,7 @@ export function MessageIntake() {
               ))}
               {filteredEmails.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-4 py-10 text-center text-sm text-slate-500">
+                  <td colSpan={4} className="px-4 py-10 text-center text-sm text-slate-400">
                     No messages found for the selected filters.
                   </td>
                 </tr>
@@ -238,14 +238,14 @@ interface SummaryCardProps {
 
 function SummaryCard({ label, value, accent }: SummaryCardProps) {
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-slate-900/60 p-5 shadow-lg shadow-slate-950/30 ring-1 ring-slate-800 animate-fade-in-up">
+    <div className="relative overflow-hidden rounded-2xl bg-white p-5 shadow-lg shadow-slate-200/70 ring-1 ring-slate-200 animate-fade-in-up">
       <div
         aria-hidden
         className={`pointer-events-none absolute inset-y-8 -right-6 h-32 w-32 rounded-full bg-gradient-to-br opacity-40 blur-2xl ${accent}`}
       />
       <div className="space-y-1">
-        <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
-        <p className="text-3xl font-semibold text-slate-50">{value}</p>
+        <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
+        <p className="text-3xl font-semibold text-slate-900">{value}</p>
       </div>
     </div>
   );

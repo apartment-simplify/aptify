@@ -40,11 +40,11 @@ export function AptifyDashboard() {
   return (
     <DashboardLayout title="Aptify Dashboard">
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-[18rem_minmax(0,1fr)]">
-        <aside className="rounded-3xl bg-slate-900/60 shadow-xl shadow-slate-950/20 ring-1 ring-slate-800">
+        <aside className="rounded-3xl bg-white shadow-xl shadow-slate-200/60 ring-1 ring-slate-200">
           <div className="flex flex-col gap-6 p-6">
             <header className="space-y-2">
               <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Navigation</p>
-              <h2 className="text-lg font-semibold text-slate-100">Control Center</h2>
+              <h2 className="text-lg font-semibold text-slate-900">Control Center</h2>
               <p className="text-sm text-slate-500">
                 Switch between orchestration and knowledge capabilities.
               </p>
@@ -63,12 +63,12 @@ export function AptifyDashboard() {
                     onClick={() => setActiveTab(tab.id)}
                     className={`group rounded-2xl border px-4 py-4 text-left transition ${
                       isActive
-                        ? "border-sky-500/60 bg-sky-500/10 text-slate-100 shadow-inner shadow-slate-950/20"
-                        : "border-transparent bg-slate-950/40 text-slate-300 hover:border-slate-800/80 hover:bg-slate-900/60 hover:text-slate-100"
+                        ? "border-sky-500/60 bg-sky-50 text-slate-900 shadow-inner shadow-slate-200/40"
+                        : "border-transparent bg-slate-100 text-slate-600 hover:border-slate-300/70 hover:bg-slate-50 hover:text-slate-900"
                     }`}
                   >
                     <span className="text-sm font-semibold">{tab.label}</span>
-                    <span className="mt-2 block text-xs text-slate-400 group-hover:text-slate-300">
+                    <span className="mt-2 block text-xs text-slate-400 group-hover:text-slate-600">
                       {tab.description}
                     </span>
                   </button>
