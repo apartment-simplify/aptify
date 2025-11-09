@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  ui:
+    build:
+      context: ./ui
+    container_name: aptify_ui
+    working_dir: /app
+    volumes:
+      - ./ui:/app                # Mount local ui folder for live reload
+      - /app/node_modules        # Prevent overwriting container node_modules
+    command: npm run dev
+    ports:
+      - "3000:3000"              # React dev server on port 3000
+    environment:
+      NODE_ENV: development
+      BROWSER: none
+
+  api:
+    build:
+      context: ./api
+    container_name: aptify_api
+    working_dir: /app
+    volumes:
+      - ./api:/app                  # Mount local api folder
+      - ./api/.venv:/app/.venv      # Persist virtual env inside container
+    command: uv run uvicorn src.aptify_api.app:app --reload --host 0.0.0.0 --port 8000
+    ports:
+      - "8000:8000"
+    environment:
+      PYTHONUNBUFFERED: 1
+      UVICORN_RELOAD_DIR: /app/src/aptify_api
+    depends_on:
+      - ui
