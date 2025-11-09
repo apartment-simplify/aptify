@@ -22,6 +22,33 @@ EMAIL_KEYWORDS: Dict[str, List[str]] = {
     "communication": ["update", "follow up", "question"],
 }
 
+MOCK_EMAILS: List[Dict[str, object]] = [
+    {
+        "subject": "Leaking faucet in unit 5B",
+        "body": "Hi team, the kitchen faucet in unit 5B has been leaking for two days and is getting worse.",
+        "sender": "julia.martinez@example.com",
+        "property_id": "prop_park-west",
+        "tenant_id": "tenant_martinez",
+        "attachments": ["leak-photo.jpg"],
+    },
+    {
+        "subject": "Reminder: April rent payment",
+        "body": "Just a reminder that April rent for unit 9C is still outstanding. Can you confirm the balance?",
+        "sender": "finance@rentpay.io",
+        "property_id": "prop_river-crest",
+        "tenant_id": "tenant_chen",
+        "attachments": [],
+    },
+    {
+        "subject": "Updated vendor contract attached",
+        "body": "Please review the attached HVAC maintenance contract and countersign at your earliest convenience.",
+        "sender": "linda@coolclimatehvac.com",
+        "property_id": "prop_oak-villas",
+        "tenant_id": None,
+        "attachments": ["hvac-contract.pdf"],
+    },
+]
+
 
 class EmailPayload(BaseModel):
     subject: str = Field(..., description="Email subject line")
@@ -93,6 +120,33 @@ def _suggest_actions(category: str, priority: str) -> List[str]:
     return actions
 
 
+def _seed_mock_emails() -> None:
+    """Warm the in-memory store with illustrative email records."""
+    if STATE.emails:
+        return
+
+    for sample in MOCK_EMAILS:
+        email_id = generate_id("email")
+        category = _detect_category(sample["subject"], sample["body"])
+        priority = _priority_from_text(sample["body"])
+        record = with_audit(
+            {
+                "id": email_id,
+                "category": category,
+                "priority": priority,
+                "confidence": 0.9 if category != "general" else 0.7,
+                "tags": [category],
+                "subject": sample["subject"],
+                "body": sample["body"],
+                "sender": sample["sender"],
+                "property_id": sample["property_id"],
+                "tenant_id": sample["tenant_id"],
+                "attachments": sample["attachments"],
+            }
+        )
+        STATE.emails[email_id] = record
+
+
 @router.post("/classify", response_model=ClassificationResult)
 def classify_email(payload: EmailPayload) -> ClassificationResult:
     """Classify an email, attach heuristics, and store it for later processing."""
@@ -130,6 +184,7 @@ def classify_email(payload: EmailPayload) -> ClassificationResult:
 @router.get("", response_model=List[Dict[str, object]])
 def list_emails() -> List[Dict[str, object]]:
     """Return stored email records for workspace queues."""
+    _seed_mock_emails()
     return list(STATE.emails.values())
 
 
