@@ -1,7 +1,7 @@
 import { useState } from "react";
-import DashboardLayout from "@/features/DashboardLayout";
-import MessageIntake from "@/features/MessageIntake";
-import KnowledgeBaseChat from "@/features/KnowledgeBaseChat";
+import DashboardLayout from "@/features/dashboard-layout";
+import MessageIntake from "@/features/message-intake";
+import KnowledgeBaseChat from "@/features/knowledge-base-chat";
 
 type TabId = "message-intake" | "knowledge-base";
 
