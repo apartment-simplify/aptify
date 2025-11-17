@@ -1,4 +1,4 @@
-import AptifyDashboard from "@/pages/AptifyDashboard";
+import AptifyDashboard from "@/pages/aptify-dashboard";
 
 function App() {
   return <AptifyDashboard />;
