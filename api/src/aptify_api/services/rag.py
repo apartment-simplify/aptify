@@ -1,6 +1,3 @@
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
-from langchain_community.vectorstores import Chroma
 from langchain.prompts import PromptTemplate
 from typing import List
 from langgraph.graph import END, StateGraph, START
@@ -19,50 +16,7 @@ load_dotenv()
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 
 
-directory_path = "api/documents"
-
-# 2. Initialize the DirectoryLoader
-# glob="**/*.pdf" ensures we get PDFs even in subfolders of api/documents
-loader = DirectoryLoader(
-    directory_path,
-    glob="**/*.pdf",
-    loader_cls=PyPDFLoader,  # Use PyPDFLoader (or PyMuPDFLoader) for parsing
-    show_progress=True,  # Shows a progress bar (useful for many files)
-    use_multithreading=True,  # Speeds up loading significantly
-)
-
-docs = loader.load()
-print(f"Loaded {len(docs)} documents from PDFs.")
-
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000,  # Target size of chunk
-    chunk_overlap=200,  # Overlap ensures context across boundaries
-    separators=["\n\n", "\n", " ", ""],  # Priority order
-)
-
-doc_splits = text_splitter.split_documents(docs)
-
-
 # Add to vectorDB
-def initialize_vectorstore(doc_splits):
-    persist_directory = "chroma_db"
-
-    if not os.path.exists(persist_directory):
-        print("Chroma DB does not exist. Creating a new database...")
-        # Initialize Chroma from documents and save it to the directory
-        vectorstore = Chroma.from_documents(
-            documents=doc_splits,
-            collection_name="rag-chroma",
-            embedding=OpenAIEmbeddings(),
-            persist_directory=persist_directory,
-        )
-        vectorstore.persist()
-    else:
-        print("Chroma DB exists. Loading from the existing database...")
-        # Load the existing Chroma database
-        vectorstore = Chroma(persist_directory, OpenAIEmbeddings())
-
-    return vectorstore.as_retriever()
 
 
 retriever = initialize_vectorstore(doc_splits)
