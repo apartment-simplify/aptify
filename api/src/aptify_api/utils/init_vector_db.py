@@ -34,14 +34,19 @@ text_splitter = RecursiveCharacterTextSplitter(
 doc_splits = text_splitter.split_documents(docs)
 
 
-def initialize_vectorstore(doc_splits):
+def initialize_vectorstore(documents=None):
     persist_directory = "src/aptify_api/db/chroma"
+
+    # Default to the module-level splits computed above so callers can simply
+    # run initialize_vectorstore() without needing to pass anything in.
+    if documents is None:
+        documents = doc_splits
 
     if not os.path.exists(persist_directory):
         print("Chroma DB does not exist. Creating a new database...")
         # Initialize Chroma from documents and save it to the directory
         vectorstore = Chroma.from_documents(
-            documents=doc_splits,
+            documents=documents,
             collection_name="rag-chroma",
             embedding=embeddings,
             persist_directory=persist_directory,
@@ -55,4 +60,5 @@ def initialize_vectorstore(doc_splits):
     return vectorstore.as_retriever()
 
 
-initialize_vectorstore(doc_splits)
+if __name__ == "__main__":
+    initialize_vectorstore()

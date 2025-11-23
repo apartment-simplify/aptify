@@ -1,31 +1,33 @@
-from langchain.prompts import PromptTemplate
+import os
+from langchain_core.prompts import PromptTemplate
 from typing import List
 from langgraph.graph import END, StateGraph, START
 from typing_extensions import TypedDict
-from langchain_community.chat_models import ChatOllama
-from langchain_ollama.llms import OllamaLLM
-from langchain_core.output_parsers import JsonOutputParser
-from langchain_core.output_parsers import StrOutputParser
+from langchain_ollama import OllamaLLM, ChatOllama
+from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
+from langchain_core.documents import Document
 from langchain_community.tools.tavily_search import TavilySearchResults
-from langchain import hub
+
+# from langchain import hub
 from pprint import pprint
 from dotenv import load_dotenv
-import os
+
+# from utils.init_vector_db import initialize_vectorstore
 
 load_dotenv()
-from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+# from langchain_openai import ChatOpenAI
 
 
-# Add to vectorDB
-
-
-retriever = initialize_vectorstore(doc_splits)
+retriever = initialize_vectorstore()
 
 ### Router
 # local_llm = 'mistral'
 # LLM
 llm = OllamaLLM(model=os.environ["MODEL"], format="json", temperature=0)
-llm_checker = ChatOpenAI(model="gpt-4o-mini")
+llm_checker = ChatOllama(
+    model="llama3.1", temperature=0  # Make sure to run `ollama pull llama3.1` first
+)
+# llm_checker = ChatOpenAI(model="gpt-4o-mini")
 
 prompt = PromptTemplate(
     template="""You are an expert at routing a user question to a vectorstore or web search. \n
@@ -54,7 +56,7 @@ retrieval_grader = prompt | llm_checker | JsonOutputParser()
 
 ### Generate
 # Prompt
-prompt = hub.pull("rlm/rag-prompt")
+# prompt = pull("rlm/rag-prompt")
 
 
 # Post-processing
@@ -129,7 +131,7 @@ class GraphState(TypedDict):
 
 ### Nodes
 
-from langchain.schema import Document
+# from langchain.schema import Document
 
 
 def retrieve(state):
