@@ -1,7 +1,7 @@
 """Embedding functions for vector storage and retrieval."""
 
 import os
-from langchain_community.vectorstores import Chroma
+from langchain_chroma import Chroma
 from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_huggingface import HuggingFaceEmbeddings
@@ -10,8 +10,7 @@ embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-
 
 # from langchain_openai import OpenAIEmbeddings
 
-DIRECTORY_PATH = os.getenv("DOCS_PATH", "/app/documents")
-
+DIRECTORY_PATH = os.getenv("DOCS_PATH", "./documents")
 # 2. Initialize the DirectoryLoader
 # glob="**/*.pdf" ensures we get PDFs even in subfolders of api/documents
 loader = DirectoryLoader(
@@ -51,7 +50,6 @@ def initialize_vectorstore(documents=None):
             embedding=embeddings,
             persist_directory=persist_directory,
         )
-        vectorstore.persist()
     else:
         print("Chroma DB exists. Loading from the existing database...")
         # Load the existing Chroma database

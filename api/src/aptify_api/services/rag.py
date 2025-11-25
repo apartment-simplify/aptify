@@ -6,14 +6,18 @@ from typing_extensions import TypedDict
 from langchain_ollama import OllamaLLM, ChatOllama
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from langchain_core.documents import Document
-from langchain_community.tools.tavily_search import TavilySearchResults
+
+# from langchain_community.tools.tavily_search import TavilySearchResults
+from langchain_tavily import TavilySearch
 
 # from langchain import hub
 from pprint import pprint
 from dotenv import load_dotenv
 
 from aptify_api.utils.init_vector_db import initialize_vectorstore
-from aptify_api.app import retriever
+
+# from aptify_api.app import retriever
+retriever = initialize_vectorstore()
 
 # from utils.init_vector_db import initialize_vectorstore
 
@@ -23,7 +27,8 @@ load_dotenv()
 ### Router
 # local_llm = 'mistral'
 # LLM
-llm = OllamaLLM(model=os.environ["MODEL"], format="json", temperature=0)
+model_name = os.getenv("MODEL", "llama3.1")
+llm = OllamaLLM(model=model_name, format="json", temperature=0)
 llm_checker = ChatOllama(
     model="llama3.1", temperature=0  # Make sure to run `ollama pull llama3.1` first
 )
@@ -111,7 +116,7 @@ re_write_prompt = PromptTemplate(
 question_rewriter = re_write_prompt | llm_checker | StrOutputParser()
 
 ### Search
-web_search_tool = TavilySearchResults(k=3)
+web_search_tool = TavilySearch(k=3)
 
 
 class GraphState(TypedDict):
@@ -130,8 +135,6 @@ class GraphState(TypedDict):
 
 
 ### Nodes
-
-# from langchain.schema import Document
 
 
 def retrieve(state):
