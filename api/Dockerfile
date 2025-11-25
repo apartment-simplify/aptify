@@ -1,11 +1,12 @@
 # Use a slim Python image
-FROM python:3.14-slim
+FROM python:3.10.14-slim
 
 # Set working directory
 WORKDIR /app
 
 # Copy pyproject.toml and lockfile first (for caching)
 COPY pyproject.toml uv.lock README.md ./
+COPY documents /app/documents
 
 # Install pip and build tools
 RUN pip install --upgrade pip setuptools wheel hatch

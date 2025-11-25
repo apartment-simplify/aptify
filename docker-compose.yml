@@ -24,6 +24,7 @@ services:
     volumes:
       - ./api:/app                  # Mount local api folder
       - ./api/.venv:/app/.venv      # Persist virtual env inside container
+      - ./documents:/app/documents
     command: uv run uvicorn src.aptify_api.app:app --reload --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
