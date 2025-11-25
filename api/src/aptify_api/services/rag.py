@@ -13,14 +13,12 @@ from pprint import pprint
 from dotenv import load_dotenv
 
 from aptify_api.utils.init_vector_db import initialize_vectorstore
+from aptify_api.app import retriever
 
 # from utils.init_vector_db import initialize_vectorstore
 
 load_dotenv()
 # from langchain_openai import ChatOpenAI
-
-
-retriever = initialize_vectorstore()
 
 ### Router
 # local_llm = 'mistral'

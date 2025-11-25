@@ -10,7 +10,7 @@ embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-
 
 # from langchain_openai import OpenAIEmbeddings
 
-DIRECTORY_PATH = "../../../../documents"
+DIRECTORY_PATH = os.getenv("DOCS_PATH", "/app/documents")
 
 # 2. Initialize the DirectoryLoader
 # glob="**/*.pdf" ensures we get PDFs even in subfolders of api/documents
@@ -55,7 +55,11 @@ def initialize_vectorstore(documents=None):
     else:
         print("Chroma DB exists. Loading from the existing database...")
         # Load the existing Chroma database
-        vectorstore = Chroma(persist_directory, embeddings)
+        vectorstore = Chroma(
+            persist_directory=persist_directory,
+            embedding_function=embeddings,
+            collection_name="rag-chroma",
+        )
 
     return vectorstore.as_retriever()
 
