@@ -48,13 +48,13 @@ question_router = prompt | llm | JsonOutputParser()
 
 prompt = PromptTemplate(
     template="""You are a grader assessing relevance of a retrieved document to a user question. \n 
-    Here is the retrieved document: \n\n {document} \n\n
+    Here is the retrieved document: \n\n {documents} \n\n
     Here is the user question: {question} \n
     If the document contains keywords related to the user question, grade it as relevant. \n
     It does not need to be a stringent test. The goal is to filter out erroneous retrievals. \n
     Give a binary score 'yes' or 'no' score to indicate whether the document is relevant to the question. \n
     Provide the binary score as a JSON with a single key 'score' and no premable or explanation.""",
-    input_variables=["question", "document"],
+    input_variables=["question", "documents"],
 )
 
 retrieval_grader = prompt | llm_checker | JsonOutputParser()
@@ -151,7 +151,7 @@ def retrieve(state):
     question = state["question"]
 
     # Retrieval
-    documents = retriever.get_relevant_documents(question)
+    documents = retriever.invoke(question)
     return {"documents": documents, "question": question}
 
 
@@ -170,7 +170,7 @@ def generate(state):
     documents = state["documents"]
 
     # RAG generation
-    generation = rag_chain.invoke({"context": documents, "question": question})
+    generation = rag_chain.invoke({"documents": documents, "question": question})
     return {"documents": documents, "question": question, "generation": generation}
 
 
@@ -193,7 +193,7 @@ def grade_documents(state):
     filtered_docs = []
     for d in documents:
         score = retrieval_grader.invoke(
-            {"question": question, "document": d.page_content}
+            {"question": question, "documents": d.page_content}
         )
         grade = score["score"]
         if grade == "yes":
@@ -241,8 +241,10 @@ def web_search(state):
 
     # Web search
     docs = web_search_tool.invoke({"query": question})
-    web_results = "\n".join([d["content"] for d in docs])
-    web_results = Document(page_content=web_results)
+    results = docs.get("results", [])
+    web_results_list = [r["content"] for r in results if "content" in r]
+    web_results_text = "\n\n".join(web_results_list)
+    web_results = Document(page_content=web_results_text)
 
     return {"documents": web_results, "question": question}
 
@@ -381,3 +383,12 @@ workflow.add_conditional_edges(
 
 # Compile
 app = workflow.compile()
+if __name__ == "__main__":
+    initial_state: GraphState = {
+        "question": "What is the duty for tenancy?",
+        "generation": "",
+    }
+    # final_state = workflow.compile()
+    final_state = app.invoke(initial_state)
+    print("Final generation:")
+    print(final_state.outputs["generation"])
