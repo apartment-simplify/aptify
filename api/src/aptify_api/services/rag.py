@@ -7,10 +7,8 @@ from langchain_ollama import OllamaLLM, ChatOllama
 from langchain_core.output_parsers import JsonOutputParser, StrOutputParser
 from langchain_core.documents import Document
 
-# from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain_tavily import TavilySearch
 
-# from langchain import hub
 from pprint import pprint
 from dotenv import load_dotenv
 
@@ -61,16 +59,23 @@ retrieval_grader = prompt | llm_checker | JsonOutputParser()
 
 ### Generate
 # Prompt
-# prompt = pull("rlm/rag-prompt")
+rag_prompt = PromptTemplate(
+    template="""
+You are an AI assistant that answers questions using the information from retrieved documents.
 
+Here are the retrieved documents:
+{documents}
 
-# Post-processing
-def format_docs(docs):
-    return "\n\n".join(doc.page_content for doc in docs)
+User question:
+{question}
 
-
+Please generate a concise, accurate answer using ONLY the information from the documents above.
+If the answer is not contained in the documents, say "I don't know."
+""",
+    input_variables=["documents", "question"],
+)
 # Chain
-rag_chain = prompt | llm | StrOutputParser()
+rag_chain = rag_prompt | llm | StrOutputParser()
 
 ### Hallucination Grader
 # Prompt
@@ -171,6 +176,7 @@ def generate(state):
 
     # RAG generation
     generation = rag_chain.invoke({"documents": documents, "question": question})
+
     return {"documents": documents, "question": question, "generation": generation}
 
 
@@ -385,10 +391,10 @@ workflow.add_conditional_edges(
 app = workflow.compile()
 if __name__ == "__main__":
     initial_state: GraphState = {
-        "question": "What is the duty for tenancy?",
+        "question": "Who pays stamp duty on tenancy agreement?",
         "generation": "",
     }
     # final_state = workflow.compile()
     final_state = app.invoke(initial_state)
     print("Final generation:")
-    print(final_state.outputs["generation"])
+    print(final_state)
