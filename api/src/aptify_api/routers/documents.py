@@ -1,4 +1,5 @@
 """Document vault management and AI extraction services."""
+
 from __future__ import annotations
 
 from typing import Dict, List, Optional
@@ -30,7 +31,7 @@ class DocumentRecord(BaseModel):
 
 
 class ExtractionRequest(BaseModel):
-    schema: Dict[str, str] = Field(
+    extraction_schema: Dict[str, str] = Field(
         ..., description="Mapping of field names to extraction instructions"
     )
 
@@ -59,8 +60,7 @@ def extract_fields(document_id: str, payload: ExtractionRequest) -> ExtractionRe
     if document_id not in STATE.documents:
         raise HTTPException(status_code=404, detail="Document not found")
     fields = {
-        key: f"Extracted {instruction}"
-        for key, instruction in payload.schema.items()
+        key: f"Extracted {instruction}" for key, instruction in payload.schema.items()
     }
     extraction_id = generate_id("extract")
     result = {

@@ -4,7 +4,7 @@ from langchain_core.prompts import PromptTemplate
 
 routing_prompt = PromptTemplate(
     template="""You are an expert at routing a user question to a vectorstore or web search. \n
-    Use the vectorstore for questions on LLM  agents, prompt engineering, and adversarial attacks. \n
+    Use the vectorstore for questions on tenancy policies. \n
     You do not need to be stringent with the keywords in the question related to these topics. \n
     Otherwise, use web-search. Give a binary choice 'web_search' or 'vectorstore' based on the question. \n
     Return the a JSON with a single key 'datasource' and no premable or explanation. \n
