@@ -45,7 +45,7 @@ class RagGraphNodes:
 
         print("---RETRIEVE---")
         question = state["question"]
-        documents = self.retriever.get_relevant_documents(question)
+        documents = self.retriever.invoke(question)
         return {"documents": documents, "question": question}
 
     def generate(self, state: GraphState) -> Dict[str, Any]:
@@ -57,6 +57,7 @@ class RagGraphNodes:
         generation = self.rag_chain.invoke(
             {"documents": state["documents"], "question": question}
         )
+        print("---GENERATION::::", generation)
         return {
             "documents": state["documents"],
             "question": question,
@@ -70,6 +71,8 @@ class RagGraphNodes:
         question = state["question"]
         filtered_docs: List[Document] = []
         for document in state["documents"]:
+
+            print("---GRADE DOCUMENT---")
             score = self.retrieval_grader.invoke(
                 {"question": question, "documents": document.page_content}
             )
