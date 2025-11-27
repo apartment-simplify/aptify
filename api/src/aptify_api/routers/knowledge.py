@@ -1,4 +1,5 @@
 """Knowledge retrieval and generative assistance endpoints."""
+
 from __future__ import annotations
 
 from typing import Dict, List
@@ -7,7 +8,8 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from ..state import STATE
-from ..utils import generate_id, timestamp
+from ..utils import GraphState, generate_id, timestamp
+from aptify_api.services.rag import app as rag_app
 
 
 router = APIRouter(prefix="/knowledge", tags=["knowledge"])
@@ -59,21 +61,37 @@ def list_articles() -> List[KnowledgeRecord]:
 
 @router.post("/query", response_model=KnowledgeAnswer)
 def query_knowledge(payload: KnowledgeQuery) -> KnowledgeAnswer:
-    matches = []
-    for article in STATE.knowledge_articles.values():
-        if payload.tags and not set(payload.tags).intersection(article["tags"]):
+    initial_state: GraphState = {
+        "question": payload.question,
+        "generation": "",
+        "documents": [],
+    }
+    final_state = rag_app.invoke(initial_state)
+
+    answer = final_state.get("generation", "")
+    raw_documents = final_state.get("documents") or []
+    if not isinstance(raw_documents, list):
+        raw_documents = [raw_documents]
+
+    sources: List[Dict[str, str]] = []
+    for idx, document in enumerate(raw_documents, start=1):
+        if document is None:
             continue
-        if payload.question.lower() in article["body"].lower():
-            matches.append(article)
-    if not matches:
-        matches = list(STATE.knowledge_articles.values())[:2]
-    snippets = [
-        {
-            "id": entry["id"],
-            "title": entry["title"],
-            "excerpt": entry["body"][:120],
-        }
-        for entry in matches
-    ]
-    answer = "Here is what I found based on the knowledge base."
-    return KnowledgeAnswer(answer=answer, sources=snippets, generated_at=timestamp())
+        page_content = getattr(document, "page_content", "")
+        metadata = getattr(document, "metadata", {}) or {}
+        source_label = (
+            metadata.get("source")
+            or metadata.get("title")
+            or metadata.get("path")
+            or f"document-{idx}"
+        )
+        snippet = (
+            page_content.replace("\n", " ").strip()
+            if isinstance(page_content, str)
+            else ""
+        )
+        sources.append(
+            {"source": source_label, "snippet": snippet[:1000]},
+        )
+
+    return KnowledgeAnswer(answer=answer, sources=sources, generated_at=timestamp())

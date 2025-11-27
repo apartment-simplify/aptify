@@ -1,4 +1,5 @@
 """FastAPI application wiring together feature routers."""
+
 from __future__ import annotations
 
 from fastapi import FastAPI
@@ -20,6 +21,7 @@ from .routers import (
     vendors,
 )
 
+from aptify_api.utils.init_vector_db import initialize_vectorstore
 
 app = FastAPI(
     title="Aptify Property Management Platform",
@@ -38,6 +40,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.on_event("startup")
+async def load_vector_db():
+    global retriever
+    retriever = initialize_vectorstore()
 
 
 app.include_router(email.router)
