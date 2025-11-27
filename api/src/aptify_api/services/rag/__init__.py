@@ -27,7 +27,7 @@ load_dotenv()
 # local_llm = 'mistral'
 # LLM
 model_name = os.getenv("MODEL", "llama3.1")
-llm = OllamaLLM(model=model_name, format="json", temperature=0)
+llm = OllamaLLM(model=model_name, temperature=0)
 llm_checker = ChatOllama(
     model="llama3.1", temperature=0  # Make sure to run `ollama pull llama3.1` first
 )
