@@ -57,7 +57,6 @@ class RagGraphNodes:
         generation = self.rag_chain.invoke(
             {"documents": state["documents"], "question": question}
         )
-        print("---GENERATION::::", generation)
         return {
             "documents": state["documents"],
             "question": question,
@@ -72,7 +71,6 @@ class RagGraphNodes:
         filtered_docs: List[Document] = []
         for document in state["documents"]:
 
-            print("---GRADE DOCUMENT---")
             score = self.retrieval_grader.invoke(
                 {"question": question, "documents": document.page_content}
             )
