@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
-from typing import Dict, List
+import json
+from typing import Dict, Iterator, List
 
 from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
 from ..state import STATE
@@ -59,15 +61,7 @@ def list_articles() -> List[KnowledgeRecord]:
     return [KnowledgeRecord(**record) for record in STATE.knowledge_articles.values()]
 
 
-@router.post("/query", response_model=KnowledgeAnswer)
-def query_knowledge(payload: KnowledgeQuery) -> KnowledgeAnswer:
-    initial_state: GraphState = {
-        "question": payload.question,
-        "generation": "",
-        "documents": [],
-    }
-    final_state = rag_app.invoke(initial_state)
-
+def _build_sources(final_state: GraphState) -> tuple[str, List[Dict[str, str]]]:
     answer = final_state.get("generation", "")
     raw_documents = final_state.get("documents") or []
     if not isinstance(raw_documents, list):
@@ -94,4 +88,51 @@ def query_knowledge(payload: KnowledgeQuery) -> KnowledgeAnswer:
             {"source": source_label, "snippet": snippet[:1000]},
         )
 
+    return answer, sources
+
+
+def _chunk_text(text: str, chunk_size: int = 120) -> Iterator[str]:
+    for idx in range(0, len(text), chunk_size):
+        yield text[idx : idx + chunk_size]
+
+
+@router.post("/query", response_model=KnowledgeAnswer)
+def query_knowledge(payload: KnowledgeQuery) -> KnowledgeAnswer:
+    initial_state: GraphState = {
+        "question": payload.question,
+        "generation": "",
+        "documents": [],
+    }
+    final_state = rag_app.invoke(initial_state)
+
+    answer, sources = _build_sources(final_state)
+
     return KnowledgeAnswer(answer=answer, sources=sources, generated_at=timestamp())
+
+
+@router.post("/query/stream")
+def stream_knowledge(payload: KnowledgeQuery) -> StreamingResponse:
+    initial_state: GraphState = {
+        "question": payload.question,
+        "generation": "",
+        "documents": [],
+    }
+    final_state = rag_app.invoke(initial_state)
+
+    answer, sources = _build_sources(final_state)
+    generated_at = timestamp()
+
+    def emit_stream() -> Iterator[str]:
+        if answer:
+            for chunk in _chunk_text(answer):
+                yield json.dumps({"type": "chunk", "chunk": chunk}) + "\n"
+        yield json.dumps(
+            {
+                "type": "done",
+                "answer": answer,
+                "sources": sources,
+                "generated_at": generated_at,
+            }
+        ) + "\n"
+
+    return StreamingResponse(emit_stream(), media_type="application/x-ndjson")
