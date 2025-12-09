@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { useKnowledgeQueryMutation } from "./knowledge-query.mutation";
 
 type ChatAuthor = "user" | "ai";
 
@@ -40,6 +41,19 @@ const mockChat: ChatMessage[] = [
 
 export function KnowledgeBaseChat() {
   const [draft, setDraft] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>(mockChat);
+
+  const { mutate: knowledgeQueryMutation,isPending: isKnowledgeQueryPending } = useKnowledgeQueryMutation({
+    onSuccess: (data) => {
+      const aiMessage: ChatMessage = {
+        id: `ai-${Date.now()}`,
+        author: "ai",
+        content: data.answer,
+        timestamp: data.generated_at
+      };
+      setMessages((prev) => [...prev, aiMessage]);
+    }
+  });
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -47,7 +61,15 @@ export function KnowledgeBaseChat() {
       return;
     }
 
-    // Future implementation will handle message submission to the Aptify backend.
+    const userMessage: ChatMessage = {
+      id: `user-${Date.now()}`,
+      author: "user",
+      content: draft.trim(),
+      timestamp: new Date().toISOString()
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    knowledgeQueryMutation(userMessage.content);
     setDraft("");
   };
 
@@ -74,7 +96,7 @@ export function KnowledgeBaseChat() {
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-6 py-6">
-          {mockChat.map((message, index) => {
+          {messages.map((message, index) => {
             const isUser = message.author === "user";
             return (
               <div
@@ -119,9 +141,11 @@ export function KnowledgeBaseChat() {
             <button
               type="submit"
               className="inline-flex items-center gap-2 rounded-full bg-sky-500/90 px-4 py-2 font-semibold text-white shadow-sm transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
-              disabled={!draft.trim()}
+              disabled={
+                !draft.trim() || isKnowledgeQueryPending 
+              }
             >
-              Send
+              {isKnowledgeQueryPending  ? "Sending…" : "Send"}
             </button>
           </div>
         </form>
