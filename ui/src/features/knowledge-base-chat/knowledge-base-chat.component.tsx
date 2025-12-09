@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { useKnowledgeQueryMutation } from "./knowledge-query.mutation";
 
 type ChatAuthor = "user" | "ai";
@@ -40,22 +40,24 @@ const mockChat: ChatMessage[] = [
   },
 ];
 
+const TYPE_DELAY_MS = 32;
+
 export function KnowledgeBaseChat() {
   const [draft, setDraft] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>(mockChat);
 
-  const { mutate: knowledgeQueryMutation, isPending: isKnowledgeQueryPending } =
-    useKnowledgeQueryMutation({
-      onSuccess: (data) => {
-        const aiMessage: ChatMessage = {
-          id: `ai-${Date.now()}`,
-          author: "ai",
-          content: data.answer,
-          timestamp: data.generated_at,
-        };
-        setMessages((prev) => [...prev, aiMessage]);
-      },
-    });
+  const [streamingMessageId, setStreamingMessageId] = useState<string | null>(
+    null
+  );
+
+  const knowledgeQueryMutation = useKnowledgeQueryMutation();
+  const streamingMessage = streamingMessageId
+    ? messages.find((message) => message.id === streamingMessageId)
+    : undefined;
+  const shouldShowSpinner =
+    knowledgeQueryMutation.isPending &&
+    (!streamingMessage || !streamingMessage.content);
+  const typingDelayRef = useRef(0);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -69,9 +71,66 @@ export function KnowledgeBaseChat() {
       content: draft.trim(),
       timestamp: new Date().toISOString(),
     };
+    const streamMessageId = `ai-stream-${Date.now()}`;
+    const streamingMessage: ChatMessage = {
+      id: streamMessageId,
+      author: "ai",
+      content: "",
+      timestamp: new Date().toISOString(),
+    };
 
-    setMessages((prev) => [...prev, userMessage]);
-    knowledgeQueryMutation(userMessage.content);
+    setMessages((prev) => [...prev, userMessage, streamingMessage]);
+    setStreamingMessageId(streamMessageId);
+    typingDelayRef.current = 0;
+    const animateChunk = (chunk: string) => {
+      const chars = Array.from(chunk);
+      const baseDelay = typingDelayRef.current;
+      chars.forEach((char, index) => {
+        setTimeout(() => {
+          setMessages((prev) =>
+            prev.map((message) =>
+              message.id === streamMessageId
+                ? { ...message, content: message.content + char }
+                : message
+            )
+          );
+        }, baseDelay + index * TYPE_DELAY_MS);
+      });
+      typingDelayRef.current = baseDelay + chars.length * TYPE_DELAY_MS;
+    };
+
+    knowledgeQueryMutation.mutate(
+      {
+        question: userMessage.content,
+        onChunk: animateChunk,
+      },
+      {
+        onSuccess: (data) => {
+          setMessages((prev) =>
+            prev.map((message) =>
+              message.id === streamMessageId
+                ? { ...message, timestamp: data.generated_at }
+                : message
+            )
+          );
+        },
+        onError: (error) => {
+          setMessages((prev) =>
+            prev.map((message) =>
+              message.id === streamMessageId
+                ? {
+                    ...message,
+                    content: `Sorry, I couldn’t fetch an answer: ${error.message}`,
+                  }
+                : message
+            )
+          );
+        },
+        onSettled: () => {
+          setStreamingMessageId(null);
+        },
+      }
+    );
     setDraft("");
   };
 
@@ -104,6 +163,13 @@ export function KnowledgeBaseChat() {
         <div className="flex-1 space-y-4 overflow-y-auto px-6 py-6">
           {messages.map((message, index) => {
             const isUser = message.author === "user";
+            if (
+              message.id === streamingMessageId &&
+              message.author === "ai" &&
+              !message.content.trim()
+            ) {
+              return null;
+            }
             return (
               <div
                 key={message.id}
@@ -131,7 +197,7 @@ export function KnowledgeBaseChat() {
               </div>
             );
           })}
-          {isKnowledgeQueryPending && (
+          {shouldShowSpinner && (
             <div
               className="flex justify-start animate-fade-in-up"
               aria-live="polite"
@@ -172,9 +238,9 @@ export function KnowledgeBaseChat() {
             <button
               type="submit"
               className="inline-flex items-center gap-2 rounded-full bg-sky-500/90 px-4 py-2 font-semibold text-white shadow-sm transition hover:bg-sky-400 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
-              disabled={!draft.trim() || isKnowledgeQueryPending}
+              disabled={!draft.trim() || knowledgeQueryMutation.isPending}
             >
-              {isKnowledgeQueryPending ? "Sending…" : "Send"}
+              {knowledgeQueryMutation.isPending ? "Sending…" : "Send"}
             </button>
           </div>
         </form>
