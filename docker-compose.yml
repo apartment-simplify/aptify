@@ -16,6 +16,17 @@ services:
       NODE_ENV: development
       BROWSER: none
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    volumes:
+      - ~/.ollama:/root/.ollama        # persist models
+    ports:
+      - "11434:11434"                      # Ollama default port
+    environment:
+      OLLAMA_HOST: 0.0.0.0 
+
   api:
     build:
       context: ./api
@@ -31,5 +42,10 @@ services:
     environment:
       PYTHONUNBUFFERED: 1
       UVICORN_RELOAD_DIR: /app/src/aptify_api
+      OLLAMA_BASE_URL: "http://ollama:11434"
     depends_on:
-      - ui
+      - ollama
+
+
+volumes:
+  ollama_models:

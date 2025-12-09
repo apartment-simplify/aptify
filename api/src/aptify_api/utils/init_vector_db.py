@@ -10,7 +10,7 @@ embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-
 
 # from langchain_openai import OpenAIEmbeddings
 
-DIRECTORY_PATH = os.getenv("DOCS_PATH", "./documents")
+DIRECTORY_PATH = os.getenv("DOCS_PATH", "/app/documents")
 # 2. Initialize the DirectoryLoader
 # glob="**/*.pdf" ensures we get PDFs even in subfolders of api/documents
 loader = DirectoryLoader(
