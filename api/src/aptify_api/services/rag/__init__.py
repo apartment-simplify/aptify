@@ -26,10 +26,14 @@ load_dotenv()
 ### Router
 # local_llm = 'mistral'
 # LLM
-model_name = os.getenv("MODEL", "llama3.1")
-llm = OllamaLLM(model=model_name, temperature=0)
+model_name = os.getenv("MODEL", "llama3.2")
+ollama_base = os.getenv("OLLAMA_BASE_URL", "http://ollama:11434")
+
+llm = OllamaLLM(model=model_name, temperature=0, base_url=ollama_base)
 llm_checker = ChatOllama(
-    model="llama3.1", temperature=0  # Make sure to run `ollama pull llama3.1` first
+    model=model_name,
+    temperature=0,
+    base_url=ollama_base,  # Make sure to run `ollama pull llama3.1` first
 )
 # llm_checker = ChatOpenAI(model="gpt-4o-mini")
 
